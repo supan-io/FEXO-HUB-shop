@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEXO HUB - Premium Shopping</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Loader -->
+    <div class="loader" id="loader">
+        <div class="loader-ring"></div>
+        <div class="loader-text">FEXO HUB</div>
+    </div>
+
+    <!-- Header -->
+    <header class="header" id="header">
+        <div class="logo" onclick="showHome()">
+            <span class="logo-f">F</span><span class="logo-rest">EXO</span>
+            <span class="logo-hub">HUB</span>
+        </div>
+        <nav class="nav" id="nav">
+            <a href="#" onclick="showHome()">Home</a>
+            <a href="#categories">Categories</a>
+            <a href="#sponsor" onclick="openSponsor()">Sponsor</a>
+        </nav>
+        <div class="header-actions">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search products..." oninput="searchProducts(this.value)">
+                <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            </div>
+            <button class="btn-cart" onclick="openCart()">
+                <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+            <button class="btn-login" id="loginBtn" onclick="handleAuth()">Sign In</button>
+            <div class="user-info" id="userInfo" style="display:none;">
+                <img id="userAvatar" src="" alt="User">
+                <span id="userName"></span>
+                <button onclick="logout()">Logout</button>
+            </div>
+            <button class="btn-admin" id="adminBtn" style="display:none;" onclick="openAdminPanel()">⚙️ Admin</button>
+        </div>
+        <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    </header>
+
+    <!-- Main Content -->
+    <main id="mainContent">
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    <span class="glitch" data-text="FEXO HUB">FEXO HUB</span>
+                </h1>
+                <p class="hero-subtitle">Future of Shopping • Neon Experience</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary" onclick="document.getElementById('categories').scrollIntoView({behavior:'smooth'})">Explore Now</button>
+                    <button class="btn-secondary" onclick="openSponsor()">Become Sponsor</button>
+                </div>
+            </div>
+            <div class="hero-orb"></div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="categories-section" id="categories">
+            <h2 class="section-title">Categories</h2>
+            <div class="category-tabs" id="categoryTabs"></div>
+            <div class="category-pages" id="categoryPages"></div>
+        </section>
+
+        <!-- Product Detail Modal -->
+        <div class="modal" id="productModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('productModal')">×</button>
+                <div id="productDetail"></div>
+            </div>
+        </div>
+
+        <!-- Cart Modal -->
+        <div class="modal" id="cartModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('cartModal')">×</button>
+                <h2>Your Cart</h2>
+                <div id="cartItems"></div>
+                <div class="cart-total" id="cartTotal"></div>
+                <button class="btn-primary full" onclick="checkout()">Checkout with Google</button>
+            </div>
+        </div>
+
+        <!-- Sponsor Modal -->
+        <div class="modal" id="sponsorModal">
+            <div class="modal-content">
+                <button class="modal-close" onclick="closeModal('sponsorModal')">×</button>
+                <h2>Become a Sponsor</h2>
+                <p class="sponsor-sub">Support FEXO HUB and get premium visibility</p>
+                <div class="sponsor-tiers">
+                    <div class="tier" onclick="selectTier('silver', 49)">
+                        <h3>Silver</h3>
+                        <div class="tier-price">$49<span>/mo</span></div>
+                        <ul><li>Logo on site</li><li>Basic visibility</li></ul>
+                    </div>
+                    <div class="tier featured" onclick="selectTier('gold', 149)">
+                        <div class="tier-badge">POPULAR</div>
+                        <h3>Gold</h3>
+                        <div class="tier-price">$149<span>/mo</span></div>
+                        <ul><li>Featured banner</li><li>Product spotlight</li><li>Priority support</li></ul>
+                    </div>
+                    <div class="tier" onclick="selectTier('platinum', 399)">
+                        <h3>Platinum</h3>
+                        <div class="tier-price">$399<span>/mo</span></div>
+                        <ul><li>Full homepage takeover</li><li>Dedicated section</li><li>Custom branding</li></ul>
+                    </div>
+                </div>
+                <button class="btn-primary full" onclick="submitSponsor()">Proceed to Sponsor</button>
+            </div>
+        </div>
+
+        <!-- Google Login Modal -->
+        <div class="modal" id="googleModal">
+            <div class="modal-content small">
+                <button class="modal-close" onclick="closeModal('googleModal')">×</button>
+                <h2>Sign in Required</h2>
+                <p>Please sign in with Google to place an order.</p>
+                <div id="googleButton"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Admin Panel -->
+    <div class="admin-panel" id="adminPanel">
+        <div class="admin-header">
+            <h2>⚙️ Admin Control Panel</h2>
+            <button class="modal-close" onclick="closeAdminPanel()">×</button>
+        </div>
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="switchAdminTab('topics', event)">Topics</button>
+            <button class="admin-tab" onclick="switchAdminTab('products', event)">Products</button>
+            <button class="admin-tab" onclick="switchAdminTab('music', event)">Music</button>
+            <button class="admin-tab" onclick="switchAdminTab('settings', event)">Settings</button>
+        </div>
+        <div class="admin-content">
+            <!-- Topics Tab -->
+            <div class="admin-tab-content active" id="tab-topics">
+                <h3>Manage Categories / Topics</h3>
+                <div class="form-row">
+                    <input type="text" id="newTopicName" placeholder="Topic Name (e.g., Electronics)">
+                    <input type="text" id="newTopicEmoji" placeholder="Emoji (e.g., 📱)" maxlength="4">
+                    <button class="btn-primary" onclick="addTopic()">+ Add Topic</button>
+                </div>
+                <div id="adminTopicsList" class="admin-list"></div>
+            </div>
+
+            <!-- Products Tab -->
+            <div class="admin-tab-content" id="tab-products">
+                <h3>Manage Products</h3>
+                <div class="form-row">
+                    <select id="productTopicSelect"></select>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="newProductName" placeholder="Product Name">
+                    <input type="number" id="newProductPrice" placeholder="Price ($)">
+                </div>
+                <div class="form-row">
+                    <textarea id="newProductDesc" placeholder="Product Description"></textarea>
+                </div>
+                <div class="form-row">
+                    <input type="file" id="newProductImages" accept="image/*" multiple>
+                    <small>Upload up to unlimited images</small>
+                </div>
+                <div class="form-row">
+                    <input type="text" id="newProductDiscount" placeholder="Discount tag (e.g., 20% OFF)">
+                </div>
+                <button class="btn-primary" onclick="addProduct()">+ Add Product</button>
+                <div id="adminProductsList" class="admin-list"></div>
+            </div>
+
+            <!-- Music Tab -->
+            <div class="admin-tab-content" id="tab-music">
+                <h3>Background Music</h3>
+                <div class="form-row">
+                    <input type="text" id="musicName" placeholder="Track Name">
+                    <input type="url" id="musicUrl" placeholder="Music URL (mp3)">
+                    <button class="btn-primary" onclick="addMusic()">+ Add Track</button>
+                </div>
+                <div id="adminMusicList" class="admin-list"></div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div class="admin-tab-content" id="tab-settings">
+                <h3>Settings</h3>
+                <div class="form-row">
+                    <label>Admin Password:</label>
+                    <input type="password" id="adminPassword" placeholder="Set new password">
+                    <button class="btn-primary" onclick="saveAdminPassword()">Save</button>
+                </div>
+                <div class="form-row">
+                    <button class="btn-secondary" onclick="exportData()">📦 Export Data</button>
+                    <button class="btn-secondary" onclick="document.getElementById('importFile').click()">📥 Import Data</button>
+                    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Music Player -->
+    <div class="music-player" id="musicPlayer" style="display:none;">
+        <button class="music-toggle" onclick="toggleMusic()">🎵</button>
+        <span id="musicTitle">No track</span>
+        <button onclick="nextTrack()">⏭</button>
+    </div>
+
+    <audio id="audioPlayer" loop></audio>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Preview Container -->
+    <div id="previewModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('previewModal')">×</button>
+            <h2>Image Preview</h2>
+            <img id="previewImg" style="width:100%;border-radius:12px;">
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
