@@ -1,4 +1,0 @@
-const firebaseConfig={apiKey:"AIzaSyCfnHmflYAlp8qwlwLiuTubr0Z995yR8Uc",authDomain:"fexo-hub.firebaseapp.com",projectId:"fexo-hub",storageBucket:"fexo-hub.firebasestorage.app",messagingSenderId:"937734056640",appId:"1:937734056640:web:32329e4054e96a6fc51b25",measurementId:"G-3083DBYQF0"};
-firebase.initializeApp(firebaseConfig);
-const ADMIN_EMAIL="itzsupan@gmail.com";const SUPPORT_PHONE="01570267525";
-const DEFAULT_CONTENT={siteName:"FEXO HUB",eyebrow:"NEXT-GEN STORE",title:"FEXO HUB",text:"Shop, play and enjoy.",sponsorTitle:"Partner with FEXO HUB",sponsorText:"Get featured.",sponsorLink:"mailto:itzsupan@gmail.com"};
