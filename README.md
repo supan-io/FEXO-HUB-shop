@@ -1,7 +1,9 @@
-# Tesla Road - Part 2
+# FEXO HUB Part 1
 
-Upload to: games/tesla-road/index.html
+Order confirm, cancel 15 min, live status, COD, location, validation, stockout, leaderboard, visitors, music fix.
 
-Features: endless 3-lane driving, themes (mountains/sea/city/war/funny), coins, obstacles, sound, Google login, live players, leaderboard (top 10, last 3 days).
+Admin: itzsupan@gmail.com
+Support: 01570267525
 
-Game link: https://supan-io.github.io/FEXO-HUB-shop/games/tesla-road/
+Upload index.html, style.css, script.js, config.js, README.md to GitHub.
+Paste firestore.rules and storage.rules in Firebase and Publish.
