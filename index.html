@@ -1,113 +1,113 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FEXO HUB</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Fexohub</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="bg-grid"></div><div class="glow glow-1"></div><div class="glow glow-2"></div>
-
-<header class="site-header">
-  <a class="brand" href="#home">FEXO<span>HUB</span></a>
-  <nav class="main-nav" id="mainNav"></nav>
-  <div class="header-actions">
-    <div class="search-box"><input id="searchInput" placeholder="Search products..."><button id="searchBtn">&#9740;</button></div>
-    <button id="accountBtn" class="btn btn-ghost">Sign in</button>
-    <button id="adminBtn" class="btn btn-neon">Admin</button>
-  </div>
+<header class="topbar">
+<div class="brand">FEXOHUB</div>
+<div class="live-stats">
+<span id="liveVisitors">🟢 Live: 0</span>
+<span id="dailyVisitors">👥 Today: 0</span>
+<button id="soundToggle" class="sound-btn">🔊 Sound ON</button>
+<button id="authBtn" class="sound-btn">Login</button>
+</div>
 </header>
-
-<main id="app">
-<section id="home" class="hero"><div class="hero-inner">
-<p class="eyebrow" id="heroEyebrow"></p><h1 id="heroTitle"></h1><p id="heroText"></p>
-<div class="hero-actions"><a href="#topics" class="btn btn-neon">Explore products</a></div>
-</div></section>
-
-<section id="topics" class="section"><div class="section-head"><h2>Collections</h2><p>Browse every category and product page.</p></div><div id="topicsGrid" class="cards"></div></section>
-
-<section id="products" class="section"><div class="section-head"><h2 id="productsTitle">All products</h2><p id="productsSubtitle"></p></div><div id="productsGrid" class="products"></div><p id="emptyState" class="empty hidden">No products found.</p></section>
-
-
-  <section id="myOrders" class="section">
-  <div class="section-head"><h2>My orders</h2><p>Track the orders you placed.</p></div>
-  <div id="myOrdersList" class="admin-list"></div>
-  </section>
-<section id="music" class="section"><div class="section-head"><h2>Music</h2><p>Enjoy music while shopping.</p></div><div id="musicList" class="music-list"></div></section>
-
-<section id="sponsor" class="section sponsor"><div class="section-head"><h2>Become a sponsor</h2><p>Companies and brands can support FEXO HUB.</p></div>
-<div class="sponsor-card"><div><h3 id="sponsorTitle"></h3><p id="sponsorText"></p></div><a id="sponsorLink" class="btn btn-neon" href="#">Contact us</a></div></section>
+<nav class="tabs">
+<button class="tab active" data-page="home">Home</button>
+<button class="tab" data-page="products">Products</button>
+<button class="tab" data-page="sponsorship">Sponsorship</button>
+<button class="tab" data-page="leaderboard">Leaderboard</button>
+<button class="tab" data-page="games">Game Zone</button>
+</nav>
+<main id="pages" class="pages">
+<section class="page active" id="home">
+<h1>Welcome to Fexohub</h1>
+<p>Shop products, join sponsorship, play free games and compete on the leaderboard.</p>
+<div class="hero-cards">
+<div class="card" data-goto="products"><h3>🛍️ Products</h3><p>Order with Cash on Delivery</p></div>
+<div class="card" data-goto="games"><h3>🎮 Game Zone</h3><p>All games are free</p></div>
+<div class="card" data-goto="leaderboard"><h3>🏆 Leaderboard</h3><p>Resets every 3 days</p></div>
+</div>
+</section>
+<section class="page" id="products">
+<h2>Products</h2>
+<div id="productGrid" class="product-grid"></div>
+</section>
+<section class="page" id="sponsorship">
+<h2>Sponsorship</h2>
+<form id="sponsorForm" class="form">
+<input type="text" id="sponsorName" placeholder="Your name" required>
+<input type="email" id="sponsorEmail" placeholder="Valid email" required>
+<input type="tel" id="sponsorPhone" placeholder="01XXXXXXXXX" required>
+<textarea id="sponsorMessage" placeholder="Your proposal"></textarea>
+<button type="submit">Send Sponsorship Request</button>
+</form>
+</section>
+<section class="page" id="leaderboard">
+<h2>🏆 Shop Leaderboard</h2>
+<p class="muted">Resets every 3 days. Only real customers appear here.</p>
+<div id="shopCountdown" class="countdown"></div>
+<ol id="shopLeaderboard" class="leaderboard"></ol>
+</section>
+<section class="page" id="games">
+<h2>🎮 Game Zone</h2>
+<p class="muted">All games are free. Login is required to enter the Game Leaderboard.</p>
+<div class="game-layout">
+<div class="game-main">
+<div class="game-grid">
+<a class="game-card" href="games/snake.html">🐍<h3>Snake</h3><p>Free to play</p></a>
+<a class="game-card" href="games/tictactoe.html">❌⭕<h3>Tic Tac Toe</h3><p>Free to play</p></a>
+<a class="game-card" href="games/memory.html">🧠<h3>Memory Match</h3><p>Free to play</p></a>
+</div>
+</div>
+<aside class="game-leaderboard">
+<h3>🎮 Game Leaderboard</h3>
+<div id="gameCountdown" class="countdown"></div>
+<ol id="gameLeaderboard" class="leaderboard"></ol>
+<p class="muted small">No demo names. Only real logged-in players appear.</p>
+</aside>
+</div>
+</section>
 </main>
-
-<footer class="site-footer"><p>&copy; <span id="year"></span> <span id="footerBrand"></span>. All rights reserved.</p></footer>
-
-<div id="productModal" class="modal"><div class="modal-box product-box"><button class="close" data-close>&times;</button>
-<div id="productImages" class="product-images"></div><div class="product-info"><h3 id="productName"></h3>
-<div class="price-row"><span id="productPrice" class="price"></span><span id="productOldPrice" class="old-price"></span></div>
-<div id="productOffer" class="offer hidden"></div><p id="productDetails"></p><button id="orderBtn" class="btn btn-neon full">Order now</button>
-<p class="tiny">Google sign-in is required to place an order.</p></div></div></div>
-
-<div id="accountModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Customer account</h3>
-<div id="googleArea"><p>Sign in with Google to place orders.</p><button id="googleSignIn" class="btn btn-neon full">Continue with Google</button></div>
-<div id="userArea" class="hidden"><p>Signed in as <strong id="userEmail"></strong></p><button id="signOutBtn" class="btn btn-ghost">Sign out</button></div></div></div>
-
-<div id="orderModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Place order</h3><p id="orderProduct" class="tiny"></p>
-<form id="orderForm"><label>Full name<input name="name" required></label><label>Phone number<input name="phone" required></label>
-<label>Delivery address<textarea name="address" rows="3" required></textarea></label><label>Quantity<input name="quantity" type="number" min="1" value="1" required></label>
-<button class="btn btn-neon full">Confirm order</button></form></div></div>
-
-<div id="adminLogin" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Admin access</h3>
-<form id="adminLoginForm"><label>Admin email<input name="email" type="email" required></label><label>Admin password<input name="password" type="password" required></label>
-<button class="btn btn-neon full">Enter dashboard</button></form></div></div>
-
-<div id="adminPanel" class="admin-panel hidden">
-<aside class="admin-side"><div class="admin-brand">FEXO<span>ADMIN</span></div>
-<button class="admin-tab active" data-tab="content">Site content</button><button class="admin-tab" data-tab="topics">Topics &amp; pages</button>
-<button class="admin-tab" data-tab="products">Products</button><button class="admin-tab" data-tab="music">Music</button>
-<button class="admin-tab" data-tab="orders">Orders</button><button class="admin-tab" data-tab="backup">Backup</button>
-<button id="adminClose" class="btn btn-ghost full">Exit admin</button></aside>
-<section class="admin-main">
-<div class="admin-view" id="tab-content"><h2>Site content</h2>
-<form id="contentForm" class="admin-form"><label>Site name<input name="siteName"></label><label>Hero eyebrow<input name="heroEyebrow"></label>
-<label>Hero title<input name="heroTitle"></label><label>Hero text<textarea name="heroText" rows="2"></textarea></label>
-<label>Sponsor title<input name="sponsorTitle"></label><label>Sponsor text<textarea name="sponsorText" rows="2"></textarea></label>
-<label>Sponsor link<input name="sponsorLink"></label><button class="btn btn-neon">Save content</button></form></div>
-
-<div class="admin-view hidden" id="tab-topics"><h2>Topics &amp; pages</h2>
-<form id="topicForm" class="admin-form"><label>Topic name<input name="name" required placeholder="Electronics"></label>
-<label>Page name<input name="page" required placeholder="Mobile phones"></label><button class="btn btn-neon">Add page</button></form>
-<div id="topicsAdmin" class="admin-list"></div></div>
-
-<div class="admin-view hidden" id="tab-products"><h2>Products</h2>
-<form id="productForm" class="admin-form"><label>Product name<input name="pname" required></label>
-<label>Price (BDT)<input name="price" type="number" step="0.01" min="0" required></label>
-<label>Old price<input name="oldPrice" type="number" step="0.01" min="0"></label>
-<label>Offer ends at<input name="offerEnds" type="datetime-local"></label>
-<label>Details<textarea name="details" rows="4"></textarea></label>
-<label>Topic<select id="productTopic" name="topic" required></select></label>
-<label>Page<select id="productPage" name="page" required></select></label>
-<label>Product images (unlimited)<input id="productImagesInput" name="images" type="file" accept="image/*" multiple></label>
-<div id="imagePreview" class="thumbs"></div>
-<button class="btn btn-neon">Save product</button><button id="cancelProduct" class="btn btn-ghost hidden" type="button">Cancel edit</button></form>
-<input id="productSearchAdmin" placeholder="Search products"><div id="productsAdmin" class="admin-list"></div></div>
-
-<div class="admin-view hidden" id="tab-music"><h2>Music (unlimited songs)</h2>
-<form id="musicForm" class="admin-form"><label>Song name<input name="sname" required placeholder="Song title"></label>
-<label>Audio file<input name="song" type="file" accept="audio/*" required></label>
-<button class="btn btn-neon">Upload song</button></form>
-<div id="musicAdmin" class="admin-list"></div></div>
-
-<div class="admin-view hidden" id="tab-orders"><h2>Customer orders</h2><div id="ordersAdmin" class="admin-list"></div></div>
-<div class="admin-view hidden" id="tab-backup"><h2>Backup</h2><div class="admin-form"><button id="exportData" class="btn btn-neon">Download data backup</button></div></div>
-</section></div>
-
-<div id="toast" class="toast"></div><audio id="siteMusic"></audio>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="config.js"></script><script src="script.js"></script>
-</body></html>
+<div id="checkoutModal" class="modal hidden">
+<div class="modal-box">
+<h2>Checkout</h2>
+<form id="checkoutForm" class="form">
+<input type="text" id="fullName" placeholder="Full name" required>
+<input type="tel" id="phone" placeholder="01XXXXXXXXX" required>
+<input type="email" id="email" placeholder="Valid email" required>
+<select id="division" required><option value="">Select Division</option></select>
+<select id="district" required disabled><option value="">Select District</option></select>
+<select id="upazilla" required disabled><option value="">Select Upazilla</option></select>
+<input type="text" id="area" placeholder="Area / Village / Road (optional)">
+<button type="button" id="locationBtn">📍 Share my live location</button>
+<p id="locationStatus" class="muted small">Location is optional.</p>
+<div class="summary">
+<div>Payment method: <b>Cash on Delivery</b></div>
+<div>Total: <b id="checkoutTotal">৳0</b></div>
+</div>
+<button type="submit" id="confirmOrder" disabled>Confirm Order</button>
+<button type="button" id="closeCheckout" class="secondary">Cancel</button>
+</form>
+</div>
+</div>
+<div id="authModal" class="modal hidden">
+<div class="modal-box">
+<h2>Login / Register</h2>
+<form id="authForm" class="form">
+<input type="email" id="authEmail" placeholder="Email" required>
+<input type="password" id="authPassword" placeholder="Password" required>
+<button type="submit">Continue</button>
+<button type="button" id="closeAuth" class="secondary">Close</button>
+</form>
+</div>
+</div>
+<div id="toast" class="toast hidden"></div>
+<script src="config.js"></script>
+<script type="module" src="script.js"></script>
+</body>
+</html>
