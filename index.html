@@ -1,81 +1,106 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FEXO HUB</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css"></head><body>
-<header class="site-header"><a class="brand" href="#" onclick="showSection('home')">FEXO<span>HUB</span></a>
-<nav class="main-nav" id="mainNav"></nav>
-<div class="header-actions"><div class="search-box"><input id="searchInput" placeholder="Search..."><button id="searchBtn">Q</button></div>
-<button id="accountBtn" class="btn btn-ghost">Sign in</button><button id="adminBtn" class="btn btn-neon">Admin</button></div></header>
-<main id="app">
-<!-- SINGLE PAGE SHOP -->
-<section id="home">
-<div class="hero"><div class="hero-inner"><p class="eyebrow" id="heroEyebrow"></p><h1 id="heroTitle"></h1><p id="heroText"></p>
-<div class="hero-actions"><button class="btn btn-neon" onclick="scrollToId('shop')">Shop now</button>
-<a class="btn btn-ghost" href="games/tesla-road/">Play Tesla Road</a></div>
-<div class="stats">Today visitors: <strong id="visitorCount">0</strong></div></div></div>
-
-<div id="shop" class="block"><div class="section-head"><h2>Products</h2><p id="productsSubtitle"></p></div><div id="productsGrid" class="products"></div><p id="emptyState" class="empty hidden">No products.</p></div>
-
-<div id="orders" class="block"><div class="section-head"><h2>My orders</h2><p>Cancel within 15 minutes.</p></div><div id="myOrdersList" class="admin-list"></div></div>
-
-<div id="music" class="block"><div class="section-head"><h2>Music</h2></div><div id="musicList" class="music-list"></div></div>
-
-<div id="leaderboard" class="block"><div class="section-head"><h2>Shop Leaderboard</h2><p>Top products by orders. Refresh every 3 days.</p></div><div id="leaderboardList" class="admin-list"></div><button id="resetLeaderboard" class="btn btn-ghost hidden">Reset leaderboard</button></div>
-</section>
-
-<!-- SPONSORSHIP BUSINESS PAGE -->
-<section id="sponsor" class="biz hidden">
-<div class="biz-hero"><div class="biz-inner"><p class="biz-eyebrow">PARTNER WITH US</p><h1 id="bizTitle">Grow your brand with FEXO HUB</h1>
-<p id="bizText">Reach engaged shoppers through sponsored placements, product features and brand campaigns.</p>
-<a id="bizCta" class="btn btn-neon" href="#">Become a sponsor</a></div></div>
-<div class="biz-grid">
-<div class="biz-card"><h3>Brand exposure</h3><p>Your logo and offer featured across the store.</p></div>
-<div class="biz-card"><h3>Product placement</h3><p>Highlight your products in curated collections.</p></div>
-<div class="biz-card"><h3>Campaign support</h3><p>Run seasonal offers and promotions with our team.</p></div>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tesla Road - FEXO HUB</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{background:#05060f;color:#fff;font-family:Arial,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:10px}
+h1{color:#00e5ff;text-shadow:0 0 10px #00e5ff;margin-bottom:8px}
+#wrap{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+canvas{background:#111;border:2px solid #00e5ff;border-radius:12px;max-width:95vw}
+.panel{background:rgba(10,14,28,.9);border:1px solid rgba(120,190,255,.25);border-radius:12px;padding:12px;min-width:220px;max-width:300px}
+.panel h3{color:#00e5ff;margin-bottom:8px;font-size:16px}
+.lb-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(120,190,255,.15);font-size:13px}
+.controls{margin-top:10px;display:flex;gap:16px}
+button{padding:12px 22px;font-size:18px;border:0;border-radius:10px;background:#00e5ff;color:#000;font-weight:bold;cursor:pointer}
+button:active{transform:scale(.95)}
+.info{margin-top:8px;color:#8fa6c4;font-size:13px;text-align:center}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(0,229,255,.15);color:#00e5ff;font-size:12px;margin-left:6px}
+</style></head><body>
+<h1>Tesla Road <span class="badge">Live: <span id="liveCount">0</span></span></h1>
+<div id="wrap">
+<canvas id="game" width="400" height="700"></canvas>
+<div class="panel"><h3>Game Leaderboard</h3><div id="lbList"><div class="lb-item">Loading...</div></div>
+<div style="margin-top:10px"><button id="loginBtn">Login with Google</button></div>
+<p class="info" id="userStatus">Not logged in</p></div>
 </div>
-<div class="biz-contact"><h3>Interested in sponsoring?</h3><p>Contact us at <span id="bizEmail"></span> or call <span id="bizPhone"></span>.</p>
-<a id="bizLink" class="btn btn-neon" href="#">Contact us</a></div>
-</section>
-</main>
-<footer class="site-footer"><p>Customer service: 01570267525 &bull; Orders: itzsupan@gmail.com</p><p>&copy; <span id="year"></span> <span id="footerBrand"></span></p></footer>
-
-<div id="productModal" class="modal"><div class="modal-box product-box"><button class="close" data-close>&times;</button><div id="productImages" class="product-images"></div>
-<div class="product-info"><h3 id="productName"></h3><div><span id="productPrice" class="price"></span> <span id="productOldPrice" class="old-price"></span></div>
-<div id="productStock" class="stock"></div><p id="productDetails"></p><button id="orderBtn" class="btn btn-neon full">Order now (COD)</button>
-<p class="tiny">Google sign-in required. Cancel within 15 min.</p></div></div></div>
-
-<div id="accountModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Account</h3>
-<div id="googleArea"><button id="googleSignIn" class="btn btn-neon full">Continue with Google</button></div>
-<div id="userArea" class="hidden"><p id="userEmail"></p><button id="signOutBtn" class="btn btn-ghost">Sign out</button></div></div></div>
-
-<div id="orderModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Order details</h3><p id="orderProduct" class="tiny"></p>
-<form id="orderForm"><label>Full name<input name="name" required></label><label>Phone<input name="phone" required placeholder="01XXXXXXXXX"></label>
-<label>Division<select name="division" required><option value="">Select</option><option>Dhaka</option><option>Chattogram</option><option>Rajshahi</option><option>Khulna</option><option>Barishal</option><option>Sylhet</option><option>Rangpur</option><option>Mymensingh</option></select></label>
-<label>District<input name="district" required></label><label>Upazila<input name="upazila" required></label><label>Area (optional)<input name="area"></label>
-<label>Address<textarea name="address" rows="2" required></textarea></label><label>Quantity<input name="quantity" type="number" min="1" value="1"></label>
-<label>Payment<select name="payment"><option>Cash on Delivery (COD)</option></select></label><button class="btn btn-neon full">Review order</button></form></div></div>
-
-<div id="confirmModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Confirm order</h3><div id="orderSummary" class="summary"></div>
-<button id="locationBtn" class="btn btn-ghost full">Share live location</button><p id="locationStatus" class="tiny">Location not shared.</p>
-<button id="confirmOrderBtn" class="btn btn-neon full">Confirm order</button></div></div>
-
-<div id="adminLogin" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Admin</h3>
-<form id="adminLoginForm"><label>Email<input name="email" type="email" required></label><label>Password<input name="password" type="password" required></label><button class="btn btn-neon full">Enter</button></form></div></div>
-
-<div id="adminPanel" class="admin-panel hidden"><aside class="admin-side"><div class="admin-brand">FEXO<span>ADMIN</span></div>
-<button class="admin-tab active" data-tab="content">Content</button><button class="admin-tab" data-tab="topics">Topics</button><button class="admin-tab" data-tab="products">Products</button>
-<button class="admin-tab" data-tab="music">Music</button><button class="admin-tab" data-tab="orders">Orders</button><button class="admin-tab" data-tab="backup">Backup</button>
-<button id="adminClose" class="btn btn-ghost full">Exit</button></aside><section class="admin-main">
-<div id="tab-content" class="admin-view"><h2>Site content</h2><form id="contentForm" class="admin-form"><label>Site name<input name="siteName"></label><label>Hero title<input name="heroTitle"></label><label>Hero text<textarea name="heroText"></textarea></label><label>Sponsor title<input name="sponsorTitle"></label><label>Sponsor text<textarea name="sponsorText"></textarea></label><label>Sponsor link<input name="sponsorLink"></label><button class="btn btn-neon">Save</button></form></div>
-<div id="tab-topics" class="admin-view hidden"><h2>Topics</h2><form id="topicForm" class="admin-form"><label>Topic<input name="name" required></label><label>Page<input name="page" required></label><button class="btn btn-neon">Add</button></form><div id="topicsAdmin" class="admin-list"></div></div>
-<div id="tab-products" class="admin-view hidden"><h2>Products</h2><form id="productForm" class="admin-form"><label>Name<input name="pname" required></label><label>Price<input name="price" type="number" required></label><label>Old price<input name="oldPrice" type="number"></label><label>Stock<select name="stock"><option value="in">In stock</option><option value="out">Out of stock</option></select></label><label>Details<textarea name="details"></textarea></label><label>Topic<select id="productTopic" name="topic"></select></label><label>Page<select id="productPage" name="page"></select></label><label>Images<input id="productImagesInput" type="file" accept="image/*" multiple></label><div id="imagePreview" class="thumbs"></div><button class="btn btn-neon">Save</button><button id="cancelProduct" class="btn btn-ghost hidden">Cancel</button></form><input id="productSearchAdmin" placeholder="Search"><div id="productsAdmin" class="admin-list"></div></div>
-<div id="tab-music" class="admin-view hidden"><h2>Music</h2><form id="musicForm" class="admin-form"><label>Song name<input name="sname" required></label><label>Audio<input name="song" type="file" accept="audio/*" required></label><button class="btn btn-neon">Upload</button></form><div id="musicAdmin" class="admin-list"></div></div>
-<div id="tab-orders" class="admin-view hidden"><h2>Orders</h2><div id="ordersAdmin" class="admin-list"></div></div>
-<div id="tab-backup" class="admin-view hidden"><h2>Backup</h2><button id="exportData" class="btn btn-neon">Download backup</button></div>
-</section></div>
-<div id="toast" class="toast"></div><audio id="siteMusic"></audio>
+<div class="controls"><button onclick="moveLeft()">&#8592;</button><button onclick="moveRight()">&#8594;</button></div>
+<p class="info">Arrow keys or buttons. Avoid obstacles, collect coins. Score saves if logged in.</p>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
-<script src="config.js"></script><script src="script.js"></script></body></html>
+<script>
+const firebaseConfig={apiKey:"AIzaSyCfnHmflYAlp8qwlwLiuTubr0Z995yR8Uc",authDomain:"fexo-hub.firebaseapp.com",projectId:"fexo-hub",storageBucket:"fexo-hub.firebasestorage.app",messagingSenderId:"937734056640",appId:"1:937734056640:web:32329e4054e96a6fc51b25"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore(),auth=firebase.auth();
+
+/* Sound */
+const actx=new (window.AudioContext||window.webkitAudioContext)();
+function beep(f,d,type){try{const o=actx.createOscillator(),g=actx.createGain();o.type=type||"square";o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.value=.08;o.start();o.stop(actx.currentTime+d)}catch(e){}}
+const coinSound=()=>beep(880,.08,"sine"),crashSound=()=>beep(120,.4,"sawtooth");
+
+/* Presence */
+let presenceRef=null;
+function initPresence(){if(!auth.currentUser)return;presenceRef=db.collection("presence").doc(auth.currentUser.uid);
+presenceRef.set({lastActive:Date.now(),email:auth.currentUser.email});
+setInterval(()=>presenceRef.set({lastActive:Date.now(),email:auth.currentUser.email}),30000);
+window.addEventListener("beforeunload",()=>presenceRef.delete())}
+db.collection("presence").onSnapshot(s=>{const now=Date.now();let c=0;s.forEach(d=>{if(now-d.data().lastActive<60000)c++});document.getElementById("liveCount").textContent=c});
+
+/* Auth */
+document.getElementById("loginBtn").onclick=async()=>{try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(e){alert(e.message)}};
+auth.onAuthStateChanged(u=>{document.getElementById("userStatus").textContent=u?("Logged in: "+u.email):"Not logged in";if(u)initPresence()});
+
+/* Leaderboard */
+db.collection("gameScores").orderBy("score","desc").limit(30).onSnapshot(s=>{
+const cutoff=Date.now()-3*86400000;
+const list=s.docs.map(d=>d.data()).filter(d=>d.ts>=cutoff).slice(0,10);
+document.getElementById("lbList").innerHTML=list.length?list.map((d,i)=>`<div class="lb-item"><span>${i+1}. ${d.name||d.email}</span><span>${d.score}</span></div>`).join(""):"<div class='lb-item'>No scores yet</div>";
+});
+
+/* Game */
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
+const W=canvas.width,H=canvas.height,roadLeft=60,roadRight=W-60,roadWidth=roadRight-roadLeft,laneCount=3,laneWidth=roadWidth/laneCount;
+let player={lane:1,x:0,y:H-120,w:40,h:70},obstacles=[],coins=[],particles=[];
+let score=0,coinsCollected=0,speed=6,frame=0,themeIndex=0,running=true,gameOver=false,scoreSaved=false;
+const themes=["mountains","sea","city","war","funny"];let theme=themes[0];
+const laneX=l=>roadLeft+laneWidth*l+laneWidth/2;
+function reset(){player.lane=1;player.x=laneX(1);obstacles=[];coins=[];particles=[];score=0;coinsCollected=0;speed=6;frame=0;themeIndex=0;theme=themes[0];gameOver=false;scoreSaved=false;running=true}
+function moveLeft(){if(player.lane>0)player.lane--}
+function moveRight(){if(player.lane<laneCount-1)player.lane++}
+document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')moveLeft();if(e.key==='ArrowRight')moveRight();if(e.key===' '&&gameOver)restart()});
+canvas.addEventListener('click',()=>{if(gameOver)restart()});
+function restart(){reset();loop()}
+function spawnObstacle(){const lane=Math.floor(Math.random()*laneCount),t=Math.random();let o={lane,x:laneX(lane),y:-80,w:40,h:70,type:'car'};
+if(t<.2){o.type='cone';o.w=25;o.h=35}else if(t<.35){o.type='barrier';o.w=70;o.h=25}obstacles.push(o)}
+function spawnCoin(){const lane=Math.floor(Math.random()*laneCount);coins.push({lane,x:laneX(lane),y:-30,r:12})}
+function update(){frame++;
+if(frame%Math.max(30,90-Math.floor(speed*3))===0)spawnObstacle();
+if(frame%45===0)spawnCoin();
+if(frame%1500===0){themeIndex=(themeIndex+1)%themes.length;theme=themes[themeIndex]}
+obstacles.forEach(o=>o.y+=speed);coins.forEach(c=>c.y+=speed);
+obstacles=obstacles.filter(o=>o.y<H+100);coins=coins.filter(c=>c.y<H+50);
+obstacles.forEach(o=>{if(Math.abs(o.x-player.x)<(o.w+player.w)/2-10&&Math.abs(o.y-player.y)<(o.h+player.h)/2-10){gameOver=true;running=false;crashSound();saveScore()}});
+coins.forEach((c,i)=>{if(Math.abs(c.x-player.x)<25&&Math.abs(c.y-player.y)<40){coinsCollected++;score+=10;coins.splice(i,1);coinSound()}});
+score+=.1;speed=6+score/300}
+function saveScore(){if(scoreSaved||!auth.currentUser)return;scoreSaved=true;
+db.collection("gameScores").add({name:auth.currentUser.displayName||auth.currentUser.email,email:auth.currentUser.email,score:Math.floor(score),ts:Date.now()})}
+function drawBackground(){ctx.fillStyle='#87ceeb';ctx.fillRect(0,0,W,H);
+if(theme==="mountains"){ctx.fillStyle='#2e8b57';for(let i=0;i<6;i++){let x=(i*90+frame*.2)%W;ctx.beginPath();ctx.moveTo(x,H);ctx.lineTo(x+45,H-120);ctx.lineTo(x+90,H);ctx.fill()}}
+if(theme==="sea"){ctx.fillStyle='#1e90ff';ctx.fillRect(0,0,roadLeft,H);ctx.fillRect(roadRight,0,W-roadRight,H);ctx.fillStyle='#fff';for(let i=0;i<20;i++){let y=(i*40+frame)%H;ctx.fillRect(10,y,20,3);ctx.fillRect(W-30,y,20,3)}}
+if(theme==="city"){ctx.fillStyle='#333';for(let i=0;i<8;i++){let x=(i*60+frame*.3)%W;ctx.fillRect(x,100,40,200)}}
+if(theme==="war"){ctx.fillStyle='#222';ctx.fillRect(0,0,W,H);if(frame%40===0)particles.push({x:Math.random()*W,y:Math.random()*H/2,r:20,life:30})}
+if(theme==="funny"){ctx.fillStyle='#ff69b4';ctx.fillRect(0,0,W,H);ctx.font='40px Arial';ctx.fillText('😂',(frame*2)%W,100);ctx.fillText('🚀',(frame*3)%W,300)}
+particles.forEach(p=>{ctx.fillStyle='orange';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();p.life--;p.r*=.95});particles=particles.filter(p=>p.life>0)}
+function drawRoad(){ctx.fillStyle='#222';ctx.fillRect(roadLeft,0,roadWidth,H);ctx.strokeStyle='#fff';ctx.setLineDash([30,20]);
+for(let i=1;i<laneCount;i++){let x=roadLeft+laneWidth*i;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}ctx.setLineDash([]);
+ctx.fillStyle='#333';ctx.fillRect(0,0,roadLeft,H);ctx.fillRect(roadRight,0,W-roadRight,H)}
+function drawPlayer(){ctx.fillStyle='#00e5ff';ctx.fillRect(player.x-20,player.y-35,40,70);ctx.fillStyle='#000';ctx.fillRect(player.x-18,player.y+20,12,15);ctx.fillRect(player.x+6,player.y+20,12,15)}
+function drawObstacles(){obstacles.forEach(o=>{if(o.type==='car'){ctx.fillStyle='#ff4444';ctx.fillRect(o.x-20,o.y-35,40,70)}
+if(o.type==='cone'){ctx.fillStyle='orange';ctx.beginPath();ctx.moveTo(o.x,o.y-20);ctx.lineTo(o.x-12,o.y+15);ctx.lineTo(o.x+12,o.y+15);ctx.fill()}
+if(o.type==='barrier'){ctx.fillStyle='#ffff00';ctx.fillRect(o.x-35,o.y-12,70,25)}})}
+function drawCoins(){coins.forEach(c=>{ctx.fillStyle='gold';ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.fill()})}
+function drawUI(){ctx.fillStyle='#fff';ctx.font='18px Arial';ctx.fillText('Score: '+Math.floor(score),10,28);ctx.fillText('Coins: '+coinsCollected,10,54);ctx.fillText('Theme: '+theme,10,80)}
+function loop(){if(!running)return;ctx.clearRect(0,0,W,H);drawBackground();drawRoad();drawObstacles();drawCoins();drawPlayer();drawUI();update();
+if(gameOver){ctx.fillStyle='rgba(0,0,0,.75)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='28px Arial';ctx.fillText('GAME OVER',110,300);ctx.font='18px Arial';ctx.fillText('Score: '+Math.floor(score),150,340);
+ctx.fillText(auth.currentUser?'Score saved to leaderboard':'Login to save score',80,380);ctx.fillText('Tap or SPACE to restart',100,420);return}
+requestAnimationFrame(loop)}
+reset();loop();
+</script></body></html>
