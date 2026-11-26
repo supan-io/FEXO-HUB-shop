@@ -14,7 +14,7 @@
   <a class="brand" href="#home">FEXO<span>HUB</span></a>
   <nav class="main-nav" id="mainNav"></nav>
   <div class="header-actions">
-    <div class="search-box"><input id="searchInput" placeholder="Search products..."><button id="searchBtn">⌕</button></div>
+    <div class="search-box"><input id="searchInput" placeholder="Search products..."><button id="searchBtn">&#9740;</button></div>
     <button id="accountBtn" class="btn btn-ghost">Sign in</button>
     <button id="adminBtn" class="btn btn-neon">Admin</button>
   </div>
@@ -23,20 +23,20 @@
 <main id="app">
 <section id="home" class="hero"><div class="hero-inner">
 <p class="eyebrow" id="heroEyebrow"></p><h1 id="heroTitle"></h1><p id="heroText"></p>
-<div class="hero-actions"><a href="#topics" class="btn btn-neon">Explore products</a><button id="heroAdmin" class="btn btn-ghost">Admin panel</button></div>
+<div class="hero-actions"><a href="#topics" class="btn btn-neon">Explore products</a></div>
 </div></section>
 
 <section id="topics" class="section"><div class="section-head"><h2>Collections</h2><p>Browse every category and product page.</p></div><div id="topicsGrid" class="cards"></div></section>
 
 <section id="products" class="section"><div class="section-head"><h2 id="productsTitle">All products</h2><p id="productsSubtitle"></p></div><div id="productsGrid" class="products"></div><p id="emptyState" class="empty hidden">No products found.</p></section>
 
-<section id="music" class="section"><div class="section-head"><h2>Music</h2><p>Enjoy background music while shopping.</p></div><div id="musicList" class="music-list"></div></section>
+<section id="music" class="section"><div class="section-head"><h2>Music</h2><p>Enjoy music while shopping.</p></div><div id="musicList" class="music-list"></div></section>
 
 <section id="sponsor" class="section sponsor"><div class="section-head"><h2>Become a sponsor</h2><p>Companies and brands can support FEXO HUB.</p></div>
 <div class="sponsor-card"><div><h3 id="sponsorTitle"></h3><p id="sponsorText"></p></div><a id="sponsorLink" class="btn btn-neon" href="#">Contact us</a></div></section>
 </main>
 
-<footer class="site-footer"><p>© <span id="year"></span> <span id="footerBrand"></span>. All rights reserved.</p></footer>
+<footer class="site-footer"><p>&copy; <span id="year"></span> <span id="footerBrand"></span>. All rights reserved.</p></footer>
 
 <div id="productModal" class="modal"><div class="modal-box product-box"><button class="close" data-close>&times;</button>
 <div id="productImages" class="product-images"></div><div class="product-info"><h3 id="productName"></h3>
@@ -55,11 +55,11 @@
 
 <div id="adminLogin" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Admin access</h3>
 <form id="adminLoginForm"><label>Admin email<input name="email" type="email" required></label><label>Admin password<input name="password" type="password" required></label>
-<button class="btn btn-neon full">Enter dashboard</button></form><p class="tiny">Only the admin email configured in config.js can edit the website.</p></div></div>
+<button class="btn btn-neon full">Enter dashboard</button></form></div></div>
 
 <div id="adminPanel" class="admin-panel hidden">
 <aside class="admin-side"><div class="admin-brand">FEXO<span>ADMIN</span></div>
-<button class="admin-tab active" data-tab="content">Site content</button><button class="admin-tab" data-tab="topics">Topics & pages</button>
+<button class="admin-tab active" data-tab="content">Site content</button><button class="admin-tab" data-tab="topics">Topics &amp; pages</button>
 <button class="admin-tab" data-tab="products">Products</button><button class="admin-tab" data-tab="music">Music</button>
 <button class="admin-tab" data-tab="orders">Orders</button><button class="admin-tab" data-tab="backup">Backup</button>
 <button id="adminClose" class="btn btn-ghost full">Exit admin</button></aside>
@@ -70,32 +70,31 @@
 <label>Sponsor title<input name="sponsorTitle"></label><label>Sponsor text<textarea name="sponsorText" rows="2"></textarea></label>
 <label>Sponsor link<input name="sponsorLink"></label><button class="btn btn-neon">Save content</button></form></div>
 
-<div class="admin-view hidden" id="tab-topics"><h2>Topics & pages</h2>
+<div class="admin-view hidden" id="tab-topics"><h2>Topics &amp; pages</h2>
 <form id="topicForm" class="admin-form"><label>Topic name<input name="name" required placeholder="Electronics"></label>
 <label>Page name<input name="page" required placeholder="Mobile phones"></label><button class="btn btn-neon">Add page</button></form>
 <div id="topicsAdmin" class="admin-list"></div></div>
 
 <div class="admin-view hidden" id="tab-products"><h2>Products</h2>
-<form id="productForm" class="admin-form"><label>Product name<input name="name" required></label>
+<form id="productForm" class="admin-form"><label>Product name<input name="pname" required></label>
 <label>Price (BDT)<input name="price" type="number" step="0.01" min="0" required></label>
 <label>Old price<input name="oldPrice" type="number" step="0.01" min="0"></label>
 <label>Offer ends at<input name="offerEnds" type="datetime-local"></label>
 <label>Details<textarea name="details" rows="4"></textarea></label>
 <label>Topic<select id="productTopic" name="topic" required></select></label>
 <label>Page<select id="productPage" name="page" required></select></label>
-<label>Product images<input id="productImagesInput" name="images" type="file" accept="image/*" multiple></label>
+<label>Product images (unlimited)<input id="productImagesInput" name="images" type="file" accept="image/*" multiple></label>
 <div id="imagePreview" class="thumbs"></div>
 <button class="btn btn-neon">Save product</button><button id="cancelProduct" class="btn btn-ghost hidden" type="button">Cancel edit</button></form>
 <input id="productSearchAdmin" placeholder="Search products"><div id="productsAdmin" class="admin-list"></div></div>
 
-<div class="admin-view hidden" id="tab-music"><h2>Music</h2>
-<form id="musicForm" class="admin-form"><label>Song name<input name="name" required placeholder="Song title"></label>
+<div class="admin-view hidden" id="tab-music"><h2>Music (unlimited songs)</h2>
+<form id="musicForm" class="admin-form"><label>Song name<input name="sname" required placeholder="Song title"></label>
 <label>Audio file<input name="song" type="file" accept="audio/*" required></label>
 <button class="btn btn-neon">Upload song</button></form>
 <div id="musicAdmin" class="admin-list"></div></div>
 
 <div class="admin-view hidden" id="tab-orders"><h2>Customer orders</h2><div id="ordersAdmin" class="admin-list"></div></div>
-
 <div class="admin-view hidden" id="tab-backup"><h2>Backup</h2><div class="admin-form"><button id="exportData" class="btn btn-neon">Download data backup</button></div></div>
 </section></div>
 
