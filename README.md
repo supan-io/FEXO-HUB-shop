@@ -1,18 +1,23 @@
-# FEXO HUB
-
-Neon electro shopping site powered by Firebase (Firestore + Storage + Authentication).
-
-## Files
-index.html, style.css, script.js, config.js, firestore.rules, storage.rules, README.md
-
-## Setup checklist
-1. Firebase Authentication: enable Google and Email/Password. Add user itzsupan@gmail.com with a password.
-2. Firestore: create database (default), paste firestore.rules, Publish.
-3. Storage: enable (needs Blaze plan), paste storage.rules, Publish.
-4. Authentication > Settings > Authorized domains: add YOUR-USERNAME.github.io
-5. Upload all files to GitHub, then Settings > Pages > Branch main > Save.
-
-## Admin
-Open the site, press Admin, sign in with the admin email and password.
-Add topics/pages, products (with unlimited images), songs, and edit site text.
-Changes are stored in Firebase, so every visitor sees them immediately.
+Fexohub Firebase Starter
+Setup
+Firebase Console-এ project খুলুন
+Authentication → Sign-in method → Email/Password enable করুন
+Firestore Database create করুন
+Project settings → Web app → config copy করুন
+config.js-এ firebaseConfig paste করুন
+Firebase Hosting-এ deploy করুন অথবা GitHub-এ push করুন
+Firestore Collections
+orders
+gameScores
+presence
+sponsors
+Notes
+COD-only checkout
+15-minute cancel window
+3-day leaderboard reset
+Game Zone separate theme
+Game leaderboard 1/3 area
+No demo names
+Login required for game leaderboard
+Sound ON/OFF
+Swipe navigation
