@@ -99,7 +99,7 @@ $("#accountBtn").onclick=()=>openModal("#accountModal");
 $("#googleSignIn").onclick=run(async()=>{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());closeModal($("#accountModal"));toast("Signed in with Google")});
 $("#signOutBtn").onclick=run(async()=>{await auth.signOut();toast("Signed out")});
 function renderUser(){const u=auth.currentUser;$("#userArea").classList.toggle("hidden",!u);$("#googleArea").classList.toggle("hidden",!!u);if(u)$("#userEmail").textContent=u.email;$("#accountBtn").textContent=u?"Account":"Sign in"}
-auth.onAuthStateChanged(()=>{renderUser();listenOrders()});
+auth.onAuthStateChanged(()=>{renderUser();listenOrders();listenMyOrders();});
 
 /* ---------- Orders ---------- */
 $("#orderBtn").onclick=()=>{
@@ -222,3 +222,16 @@ $("#searchInput").oninput=e=>{
 };
 $("#searchBtn").onclick=()=>$("#searchInput").dispatchEvent(new Event("input"));
 renderAll();initSite();
+
+
+/* Customer orders */
+let myOrders=[];
+function listenMyOrders(){
+  if(!auth.currentUser){myOrders=[];renderMyOrders();return}
+  db.collection("orders").where("customer","==",auth.currentUser.email)
+    .onSnapshot(s=>{myOrders=s.docs.map(d=>({id:d.id,...d.data()}));renderMyOrders()},e=>console.error(e));
+}
+function renderMyOrders(){
+  const el=$("#myOrdersList");if(!el)return;
+  el.innerHTML=myOrders.map(o=>`<div class="admin-item"><div><strong>${esc(o.productName)}</strong> x ${o.quantity}<br><small>Status: pending &bull; ${new Date(o.date).toLocaleString()}</small></div><div class="admin-actions"><span class="tiny">Support: 01570267525</span></div></div>`).join("")||`<p class="empty">No orders yet. Sign in and place an order.</p>`;
+}
