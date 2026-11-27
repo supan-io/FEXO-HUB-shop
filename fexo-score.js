@@ -10,7 +10,7 @@ const cfg={apiKey:"AIzaSyCfnHmflYAlp8qwlwLiuTubr0Z995yR8Uc",authDomain:"fexo-hub
 const CYCLE_DAYS=3; // config.js er LB_CYCLE_DAYS er sathe mil rakhben
 const BD_OFFSET=6*36e5,CYCLE_MS=CYCLE_DAYS*864e5,cycleId=()=>Math.floor((Date.now()+BD_OFFSET)/CYCLE_MS);
 const base=document.currentScript.src,HUB=new URL("index.html",base).href,V="https://www.gstatic.com/firebasejs/10.12.2/";
-const gameId=()=>new URLSearchParams(location.search).get("game")||(location.pathname.match(/\/games\/([^\/]+)/)||[])[1];
+const gameId=()=>new URLSearchParams(location.search).get("game")||decodeURIComponent((location.pathname.match(/\/games\/([^\/]+)/)||[])[1]||"");
 const load=src=>new Promise((res,rej)=>{const s=document.createElement("script");s.src=src;s.onload=res;s.onerror=()=>rej(new Error("Failed to load "+src));document.head.appendChild(s)});
 function say(m){let t=document.getElementById("fexoScoreToast");if(!t){t=document.createElement("div");t.id="fexoScoreToast";t.style.cssText="position:fixed;left:50%;top:16px;transform:translateX(-50%);background:#06222b;border:1px solid #00e5ff;color:#fff;padding:10px 18px;border-radius:999px;font:600 14px sans-serif;z-index:2147483647;opacity:0;transition:opacity .3s;pointer-events:none";document.body.appendChild(t)}
 t.textContent=m;t.style.opacity=1;clearTimeout(t._t);t._t=setTimeout(()=>t.style.opacity=0,3500)}

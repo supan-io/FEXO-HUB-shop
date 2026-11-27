@@ -1,7 +1,12 @@
 # FEXO HUB v7
 
-## Games (code diye add korun)
-Games ar admin panel theke add hoy na. `config.js` er `GAMES` list e ekta line jog korun (id, name, image, desc, url).
+## Games (auto)
+GitHub e `games/<gamename>/` folder upload korlei hub e auto show hobe (config.js e kichu likhte hoy na).
+- Folder er nam = game id, lowercase + hyphen (rickshaw-city).
+- Optional `games/<gamename>/game.json`: `{"name":"Rickshaw City","desc":"...","image":"cover.jpg","order":1}`
+- game.json na thakle nam folder theke hoy, cover = `cover.jpg`.
+- Github.io chhara custom domain hole `config.js` e `GITHUB_REPO="username/repo"` likhte hobe.
+- Notun game 5 minute er moddhe hub e ashe (cache).
 
 ## Game flow
 Game Hub -> game card -> Game interface (top e **Play now**, niche leaderboard) -> Play now -> game er alada full page khole.

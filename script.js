@@ -1,7 +1,7 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const db=firebase.firestore(),storage=firebase.storage(),auth=firebase.auth();
 const siteRef=db.collection("site").doc("main");
-let site={content:{...DEFAULT_CONTENT},topics:[],music:[]},products=[],orders=[],myOrders=[],games=GAMES,editingProduct=null,selectedFiles=[],currentProduct=null,currentGame=null,pendingOrder=null,currentSection="home",currentTopic="all";
+let site={content:{...DEFAULT_CONTENT},topics:[],music:[]},products=[],orders=[],myOrders=[],games=[],editingProduct=null,selectedFiles=[],currentProduct=null,currentGame=null,pendingOrder=null,currentSection="home",currentTopic="all";
 const sections=["home","games","sponsor"];
 const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -29,7 +29,7 @@ site.topics.forEach(t=>{const b=document.createElement("button");b.textContent=t
 function renderProducts(){let list=products;if(currentTopic!=="all")list=list.filter(p=>p.topicId===currentTopic);
 $("#productsGrid").innerHTML=list.map(p=>{const out=p.stock==="out";return `<article class="product" data-id="${p.id}"><img class="thumb" src="${esc(p.images[0]||"https://placehold.co/600x600/0a1020/00e5ff?text=FEXO+HUB")}"><div class="product-body"><h4>${esc(p.name)}</h4><div class="price">৳${Number(p.price).toFixed(2)}</div><div class="stock ${out?"out":"in"}">${out?"Out of stock":"In stock"}</div></div></article>`}).join("");
 $("#emptyState").classList.toggle("hidden",list.length>0);$$("#productsGrid .product").forEach(el=>el.onclick=()=>showProduct(el.dataset.id))}
-function renderGames(){$("#gamesGrid").innerHTML=games.map(g=>`<article class="game-card" data-id="${g.id}"><img src="${esc(g.image||"https://placehold.co/600x340/0a1020/00e5ff?text=GAME")}"><div class="game-body"><h3>${esc(g.name)}</h3><p>${esc(g.desc||"")}</p></div></article>`).join("");
+function renderGames(){$("#gamesGrid").innerHTML=games.map(g=>`<article class="game-card" data-id="${g.id}"><img src="${esc(g.image||PH_IMG(g.name))}" onerror="this.onerror=null;this.src=PH_IMG('${esc(g.name).replace(/'/g,"")}')"><div class="game-body"><h3>${esc(g.name)}</h3><p>${esc(g.desc||"")}</p></div></article>`).join("");
 $("#gamesEmpty").classList.toggle("hidden",games.length>0);$$("#gamesGrid .game-card").forEach(el=>el.onclick=()=>openGame(el.dataset.id))}
 function filterProducts(t,p){currentTopic=t;renderCategoryBar();renderProducts();scrollToId("shop")}
 function showProduct(id){const p=products.find(x=>x.id===id);if(!p)return;currentProduct=p;$("#productName").textContent=p.name;$("#productPrice").textContent="৳"+Number(p.price).toFixed(2);$("#productOldPrice").textContent=p.oldPrice?"৳"+Number(p.oldPrice).toFixed(2):"";$("#productDetails").textContent=p.details||"";const out=p.stock==="out";$("#productStock").textContent=out?"Out of stock":"In stock";$("#productStock").className="stock "+(out?"out":"in");$("#orderBtn").disabled=out;$("#orderBtn").textContent=out?"Out of stock":"Order now (COD)";$("#productImages").innerHTML=p.images.map(i=>`<img src="${esc(i)}">`).join("")||`<img src="https://placehold.co/800x600/0a1020/00e5ff?text=FEXO+HUB">`;openModal("#productModal")}
@@ -98,7 +98,7 @@ const fmt=n=>Number(n||0).toLocaleString();
 const playerName=u=>u.displayName||(u.email||"Player").split("@")[0];
 let lb={tok:0,game:null,cycle:0,last:null,done:false,loading:false,rank:0},lbIO=null,lbTimer=null;
 function openGame(id){const g=games.find(x=>x.id===id);if(!g)return;currentGame=g;
-$("#gvTitle").textContent=g.name;$("#gvDesc").textContent=g.desc||"";$("#gvImage").src=g.image||"https://placehold.co/600x340/0a1020/00e5ff?text="+encodeURIComponent(g.name);
+$("#gvTitle").textContent=g.name;$("#gvDesc").textContent=g.desc||"";const gi=$("#gvImage");gi.onerror=()=>{gi.onerror=null;gi.src=PH_IMG(g.name)};gi.src=g.image||PH_IMG(g.name);
 showSection("gameview");window.scrollTo(0,0);resetLeaderboard();
 if(!lbIO){lbIO=new IntersectionObserver(en=>{if(en[0].isIntersecting&&currentSection==="gameview")loadMore()},{rootMargin:"250px"});lbIO.observe($("#lbSentinel"))}
 clearInterval(lbTimer);lbTimer=setInterval(tickReset,30000);tickReset()}
@@ -125,4 +125,26 @@ sessionStorage.setItem("fexo_return",currentGame.id);const u=new URL(currentGame
 /* game theke hub e fire ashle oi game er leaderboard e niye jabe */
 window.addEventListener("pageshow",e=>{if(e.persisted){sessionStorage.removeItem("fexo_return");if(currentSection==="gameview")resetLeaderboard()}});
 renderAll();initSite();trackVisitor();
-{const r=sessionStorage.getItem("fexo_return");if(r){sessionStorage.removeItem("fexo_return");openGame(r)}}
+/* ===== Auto game discovery (GitHub games/ folder) ===== */
+const GAMES_CACHE="fexo_games_v2",prettify=s=>s.replace(/[-_]+/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+function ghRepo(){if(typeof GITHUB_REPO==="string"&&GITHUB_REPO.includes("/"))return GITHUB_REPO.trim();const h=location.hostname;
+if(h.endsWith(".github.io")){const o=h.split(".")[0],p=location.pathname.split("/")[1];return o+"/"+(p&&!p.includes(".")?p:o+".github.io")}return ""}
+const PH_IMG=n=>"https://placehold.co/600x340/0a1020/00e5ff?text="+encodeURIComponent(n||"GAME");
+function mergeGames(found){const m=new Map();found.forEach(g=>m.set(g.id,g));
+GAMES.forEach(g=>{const o=Object.fromEntries(Object.entries(g).filter(([,v])=>v));m.set(g.id,{...(m.get(g.id)||{name:prettify(g.id),url:GAMES_DIR+"/"+g.id+"/"}),...o})});
+return [...m.values()].sort((a,b)=>(a.order??999)-(b.order??999)||a.name.localeCompare(b.name))}
+async function discoverGames(){const repo=ghRepo();if(!repo)return [];
+const r=await fetch(`https://api.github.com/repos/${repo}/contents/${GAMES_DIR}`,{headers:{Accept:"application/vnd.github+json"}});if(!r.ok)throw new Error("GitHub API "+r.status);
+const names=(await r.json()).filter(i=>i.type==="dir"&&!/^[._]/.test(i.name)).map(i=>i.name);
+return Promise.all(names.map(async id=>{let m={};try{const x=await fetch(`${GAMES_DIR}/${id}/game.json`,{cache:"no-cache"});if(x.ok)m=await x.json()}catch(e){}
+const img=m.image?(/^(https?:)?\/\//.test(m.image)?m.image:`${GAMES_DIR}/${id}/${m.image}`):`${GAMES_DIR}/${id}/cover.jpg`;
+return{id,name:m.name||prettify(id),desc:m.desc||"",image:img,url:`${GAMES_DIR}/${id}/`,order:m.order}}))}
+let returnHandled=false;
+function handleReturn(){if(returnHandled)return;returnHandled=true;const r=sessionStorage.getItem("fexo_return");if(r){sessionStorage.removeItem("fexo_return");if(games.some(g=>g.id===r))openGame(r)}}
+async function loadGames(){let cache=null;try{cache=JSON.parse(localStorage.getItem(GAMES_CACHE)||"null")}catch(e){}
+if(cache){games=mergeGames(cache.list);renderGames();handleReturn()}else{games=mergeGames([]);renderGames()}
+if(cache&&Date.now()-cache.t<3e5)return;
+try{const list=await discoverGames();try{localStorage.setItem(GAMES_CACHE,JSON.stringify({t:Date.now(),list}))}catch(e){}games=mergeGames(list)}
+catch(e){console.warn("Game list:",e.message);if(!cache)games=mergeGames([])}
+renderGames();handleReturn()}
+loadGames();
