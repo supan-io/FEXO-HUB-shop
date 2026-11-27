@@ -68,6 +68,3 @@ label{display:block;margin:8px 0;font-size:12px;color:#8fa6c4}input,textarea,sel
 .lb-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.lb-name small{color:#00e5ff;margin-left:6px}
 .lb-score{font-family:Orbitron;font-weight:700;color:#00e5ff}
 .lb-sentinel{text-align:center;color:#8fa6c4;padding:18px;min-height:40px}
-.game-player{position:fixed;inset:0;background:#000;z-index:120;display:flex;flex-direction:column}
-.gp-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:#05060f;border-bottom:1px solid rgba(120,190,255,.2)}
-.game-player iframe{flex:1;width:100%;border:0;background:#000}

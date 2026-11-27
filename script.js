@@ -96,7 +96,7 @@ const cycleEnd=()=>(cycleId()+1)*CYCLE_MS-BD_OFFSET;
 const lbRef=(gid,cyc)=>db.collection("leaderboards").doc(gid+"_"+cyc).collection("scores");
 const fmt=n=>Number(n||0).toLocaleString();
 const playerName=u=>u.displayName||(u.email||"Player").split("@")[0];
-let lb={tok:0,game:null,cycle:0,last:null,done:false,loading:false,rank:0},lbIO=null,lbTimer=null,playing=null;
+let lb={tok:0,game:null,cycle:0,last:null,done:false,loading:false,rank:0},lbIO=null,lbTimer=null;
 function openGame(id){const g=games.find(x=>x.id===id);if(!g)return;currentGame=g;
 $("#gvTitle").textContent=g.name;$("#gvDesc").textContent=g.desc||"";$("#gvImage").src=g.image||"https://placehold.co/600x340/0a1020/00e5ff?text="+encodeURIComponent(g.name);
 showSection("gameview");window.scrollTo(0,0);resetLeaderboard();
@@ -119,14 +119,10 @@ finally{if(tok===lb.tok){lb.loading=false;$("#lbLoader").classList.add("hidden")
 async function loadMine(){const box=$("#gvMine"),u=auth.currentUser;if(!u){box.textContent="Sign in to save your score on the leaderboard.";return}
 try{const d=await lbRef(lb.game.id,lb.cycle).doc(u.uid).get();box.innerHTML=d.exists?`Your best: <strong>${fmt(d.data().score)}</strong>`:"You have no score yet. Press Play now!"}catch(e){box.textContent=""}}
 function onAuthLb(){if(currentSection!=="gameview"||!lb.game)return;loadMine();const me=auth.currentUser?.uid;$$("#lbList .lb-row").forEach(r=>{const m=r.dataset.uid===me;r.classList.toggle("me",m);r.querySelector(".you").textContent=m?"(you)":""})}
-/* Play now -> proper game (iframe) */
+/* Play now -> game alada full page e khole (game er nijer page) */
 $("#gvPlay").onclick=()=>{if(!currentGame)return;if(!auth.currentUser){openModal("#accountModal");return toast("Sign in to play and save your score")}
-playing=currentGame;$("#gpTitle").textContent=currentGame.name;$("#gpFrame").src=currentGame.url;$("#gamePlayer").classList.remove("hidden");$("#siteMusic").pause()};
-$("#gpClose").onclick=()=>{$("#gpFrame").src="about:blank";$("#gamePlayer").classList.add("hidden");playing=null;if(currentSection==="gameview")resetLeaderboard()};
-/* Game over -> highest score only. Game theke: parent.postMessage({type:"fexo-score",score:123},"*") */
-window.addEventListener("message",e=>{const d=e.data;if(!d||d.type!=="fexo-score"||!playing)return;if(e.origin!==location.origin||e.source!==$("#gpFrame").contentWindow)return;submitScore(playing,d.score)});
-async function submitScore(g,score){const u=auth.currentUser;score=Math.floor(Number(score));if(!u||!isFinite(score)||score<=0)return;
-const ref=lbRef(g.id,cycleId()).doc(u.uid);
-try{const r=await db.runTransaction(async t=>{const d=await t.get(ref);const best=d.exists?d.data().score:0;if(score<=best)return{saved:false,best};t.set(ref,{uid:u.uid,name:playerName(u),score,updatedAt:Date.now()});return{saved:true,best:score}});
-toast(r.saved?"New high score: "+fmt(r.best)+"!":"Your best stays "+fmt(r.best))}catch(err){toast(err.message)}}
+sessionStorage.setItem("fexo_return",currentGame.id);const u=new URL(currentGame.url,location.href);u.searchParams.set("game",currentGame.id);location.href=u.href};
+/* game theke hub e fire ashle oi game er leaderboard e niye jabe */
+window.addEventListener("pageshow",e=>{if(e.persisted){sessionStorage.removeItem("fexo_return");if(currentSection==="gameview")resetLeaderboard()}});
 renderAll();initSite();trackVisitor();
+{const r=sessionStorage.getItem("fexo_return");if(r){sessionStorage.removeItem("fexo_return");openGame(r)}}

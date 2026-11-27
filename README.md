@@ -4,20 +4,25 @@
 Games ar admin panel theke add hoy na. `config.js` er `GAMES` list e ekta line jog korun (id, name, image, desc, url).
 
 ## Game flow
-Game Hub -> game card -> Game interface (top e **Play now**, niche leaderboard) -> Play now -> game cholbe (fullscreen).
+Game Hub -> game card -> Game interface (top e **Play now**, niche leaderboard) -> Play now -> game er alada full page khole.
 
 ## Leaderboard
 - Prottek game er alada leaderboard, high -> low score, infinite scroll.
 - Ek account = ek score (shudhu highest). Score kombe na.
-- Proti 3 din por (Bangladesh time) leaderboard auto reset (`LB_CYCLE_DAYS` in config.js).
+- Proti 3 din por (Bangladesh time) leaderboard auto reset (`LB_CYCLE_DAYS` in config.js; fexo-score.js e `CYCLE_DAYS` o same rakhben).
 - Sobai sobar score dekhte pare.
 
-## Game theke score pathano
-Game over hole game er JS e eita call korun:
+## Game e score system lagano
+Prottek game er index.html e `</body>` er age (path thik rekhe):
 
-    parent.postMessage({type:"fexo-score", score: finalScore}, "*");
+    <script src="../../fexo-score.js"></script>
 
-Game ke hub er same domain e rakhte hobe (games/rickshaw-city/ etc).
+Game over hole:
+
+    FexoScore.submit(finalScore);   // shudhu highest save hoy
+    FexoScore.exit();               // Game Hub e fire jete (optional)
+
+Game folder er nam = `GAMES` er `id` hote hobe (games/rickshaw-city/ -> id "rickshaw-city").
 
 ## Firebase rules
 `firestore.rules` e eita jog korun, then Publish:
