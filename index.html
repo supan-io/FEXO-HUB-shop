@@ -1,43 +1,69 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FEXO HUB</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css"></head><body>
 <header class="site-header"><a class="brand" href="#" onclick="showSection('home')">FEXO<span>HUB</span></a>
 <nav class="main-nav" id="mainNav"></nav>
 <div class="header-actions"><div class="search-box"><input id="searchInput" placeholder="Search..."><button id="searchBtn">Q</button></div>
 <button id="accountBtn" class="btn btn-ghost">Sign in</button><button id="adminBtn" class="btn btn-neon">Admin</button></div></header>
 <main id="app">
-<section id="home" class="hero"><div class="hero-inner"><p class="eyebrow" id="heroEyebrow"></p><h1 id="heroTitle"></h1><p id="heroText"></p>
-<div class="hero-actions"><button class="btn btn-neon" onclick="showSection('products')">Shop now</button><button class="btn btn-ghost" onclick="showSection('games')">Play games</button></div>
-<div class="stats">Today visitors: <strong id="visitorCount">0</strong></div></div></section>
-<section id="products" class="section hidden"><div class="section-head"><h2 id="productsTitle">All products</h2><p id="productsSubtitle"></p></div><div id="productsGrid" class="products"></div><p id="emptyState" class="empty hidden">No products.</p></section>
-<section id="myOrders" class="section hidden"><div class="section-head"><h2>My orders</h2><p>Cancel within 15 minutes.</p></div><div id="myOrdersList" class="admin-list"></div></section>
-<section id="music" class="section hidden"><div class="section-head"><h2>Music</h2></div><div id="musicList" class="music-list"></div></section>
-<section id="games" class="section hidden"><div class="section-head"><h2>Game Zone</h2><p>All games free. Login to join leaderboard.</p></div>
-<div class="game-hero"><h3>Tesla Road</h3><p>Endless driving game.</p><a class="btn btn-neon" href="games/tesla-road/">Play Tesla Road</a></div>
-<p class="tiny">More games coming in Part 2.</p></section>
-<section id="leaderboard" class="section hidden"><div class="section-head"><h2>Shop Leaderboard</h2><p>Top products by orders. Refresh every 3 days.</p></div><div id="leaderboardList" class="admin-list"></div><button id="resetLeaderboard" class="btn btn-ghost hidden">Reset leaderboard</button></section>
-<section id="sponsor" class="section hidden"><div class="section-head"><h2>Become a sponsor</h2></div><div class="sponsor-card"><div><h3 id="sponsorTitle"></h3><p id="sponsorText"></p></div><a id="sponsorLink" class="btn btn-neon" href="#">Contact</a></div></section>
+<!-- SINGLE PAGE SHOP -->
+<section id="home">
+<div class="hero"><div class="hero-inner"><p class="eyebrow" id="heroEyebrow"></p><h1 id="heroTitle"></h1><p id="heroText"></p>
+<div class="hero-actions"><button class="btn btn-neon" onclick="scrollToId('shop')">Shop now</button>
+<a class="btn btn-ghost" href="games/rickshaw-city/">Play Rickshaw City</a></div>
+<div class="stats">Today visitors: <strong id="visitorCount">0</strong></div></div></div>
+
+<div id="shop" class="block"><div class="section-head"><h2>Shop</h2><p id="productsSubtitle"></p></div>
+<div id="categoryBar" class="category-bar"></div>
+<div id="productsGrid" class="products"></div><p id="emptyState" class="empty hidden">No products yet. Admin can add from Admin panel.</p></div>
+
+<div id="orders" class="block"><div class="section-head"><h2>My orders</h2><p>Cancel within 15 minutes.</p></div><div id="myOrdersList" class="admin-list"></div></div>
+
+<div id="music" class="block"><div class="section-head"><h2>Music</h2></div><div id="musicList" class="music-list"></div></div>
+
+<div id="leaderboard" class="block"><div class="section-head"><h2>Shop Leaderboard</h2><p>Top products by orders. Refresh every 3 days.</p></div><div id="leaderboardList" class="admin-list"></div><button id="resetLeaderboard" class="btn btn-ghost hidden">Reset leaderboard</button></div>
+</section>
+
+<!-- SPONSORSHIP BUSINESS PAGE -->
+<section id="sponsor" class="biz hidden">
+<div class="biz-hero"><div class="biz-inner"><p class="biz-eyebrow">PARTNER WITH US</p><h1 id="bizTitle">Grow your brand with FEXO HUB</h1>
+<p id="bizText">Reach engaged shoppers through sponsored placements, product features and brand campaigns.</p>
+<a id="bizCta" class="btn btn-neon" href="#">Become a sponsor</a></div></div>
+<div class="biz-grid">
+<div class="biz-card"><h3>Brand exposure</h3><p>Your logo and offer featured across the store.</p></div>
+<div class="biz-card"><h3>Product placement</h3><p>Highlight your products in curated collections.</p></div>
+<div class="biz-card"><h3>Campaign support</h3><p>Run seasonal offers and promotions with our team.</p></div>
+</div>
+<div class="biz-contact"><h3>Interested in sponsoring?</h3><p>Contact us at <span id="bizEmail"></span> or call <span id="bizPhone"></span>.</p>
+<a id="bizLink" class="btn btn-neon" href="#">Contact us</a></div>
+</section>
 </main>
 <footer class="site-footer"><p>Customer service: 01570267525 &bull; Orders: itzsupan@gmail.com</p><p>&copy; <span id="year"></span> <span id="footerBrand"></span></p></footer>
+
 <div id="productModal" class="modal"><div class="modal-box product-box"><button class="close" data-close>&times;</button><div id="productImages" class="product-images"></div>
 <div class="product-info"><h3 id="productName"></h3><div><span id="productPrice" class="price"></span> <span id="productOldPrice" class="old-price"></span></div>
-<div id="productStock" class="stock"></div><div id="productOffer" class="offer hidden"></div><p id="productDetails"></p>
-<button id="orderBtn" class="btn btn-neon full">Order now (COD)</button><p class="tiny">Google sign-in required. Cancel within 15 min.</p></div></div></div>
+<div id="productStock" class="stock"></div><p id="productDetails"></p><button id="orderBtn" class="btn btn-neon full">Order now (COD)</button>
+<p class="tiny">Google sign-in required. Cancel within 15 min.</p></div></div></div>
+
 <div id="accountModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Account</h3>
 <div id="googleArea"><button id="googleSignIn" class="btn btn-neon full">Continue with Google</button></div>
 <div id="userArea" class="hidden"><p id="userEmail"></p><button id="signOutBtn" class="btn btn-ghost">Sign out</button></div></div></div>
+
 <div id="orderModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Order details</h3><p id="orderProduct" class="tiny"></p>
 <form id="orderForm"><label>Full name<input name="name" required></label><label>Phone<input name="phone" required placeholder="01XXXXXXXXX"></label>
 <label>Division<select name="division" required><option value="">Select</option><option>Dhaka</option><option>Chattogram</option><option>Rajshahi</option><option>Khulna</option><option>Barishal</option><option>Sylhet</option><option>Rangpur</option><option>Mymensingh</option></select></label>
 <label>District<input name="district" required></label><label>Upazila<input name="upazila" required></label><label>Area (optional)<input name="area"></label>
 <label>Address<textarea name="address" rows="2" required></textarea></label><label>Quantity<input name="quantity" type="number" min="1" value="1"></label>
 <label>Payment<select name="payment"><option>Cash on Delivery (COD)</option></select></label><button class="btn btn-neon full">Review order</button></form></div></div>
+
 <div id="confirmModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Confirm order</h3><div id="orderSummary" class="summary"></div>
 <button id="locationBtn" class="btn btn-ghost full">Share live location</button><p id="locationStatus" class="tiny">Location not shared.</p>
 <button id="confirmOrderBtn" class="btn btn-neon full">Confirm order</button></div></div>
+
 <div id="adminLogin" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Admin</h3>
 <form id="adminLoginForm"><label>Email<input name="email" type="email" required></label><label>Password<input name="password" type="password" required></label><button class="btn btn-neon full">Enter</button></form></div></div>
+
 <div id="adminPanel" class="admin-panel hidden"><aside class="admin-side"><div class="admin-brand">FEXO<span>ADMIN</span></div>
 <button class="admin-tab active" data-tab="content">Content</button><button class="admin-tab" data-tab="topics">Topics</button><button class="admin-tab" data-tab="products">Products</button>
 <button class="admin-tab" data-tab="music">Music</button><button class="admin-tab" data-tab="orders">Orders</button><button class="admin-tab" data-tab="backup">Backup</button>
