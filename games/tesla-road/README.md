@@ -1,7 +1,7 @@
-# Tesla Road - Part 2
+# Rickshaw City - Part 1 v9
 
-Upload to: games/tesla-road/index.html
+Fixed controls: joystick + touch buttons + keyboard. Map 13x, pond, river, bridges.
 
-Features: endless 3-lane driving, themes (mountains/sea/city/war/funny), coins, obstacles, sound, Google login, live players, leaderboard (top 10, last 3 days).
+Upload to: games/rickshaw-city/index.html
 
-Game link: https://supan-io.github.io/FEXO-HUB-shop/games/tesla-road/
+Game link: https://supan-io.github.io/FEXO-HUB-shop/games/rickshaw-city/

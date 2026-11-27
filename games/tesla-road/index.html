@@ -1,106 +1,207 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tesla Road - FEXO HUB</title>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><title>Rickshaw City - FEXO HUB</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{background:#05060f;color:#fff;font-family:Arial,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:10px}
-h1{color:#00e5ff;text-shadow:0 0 10px #00e5ff;margin-bottom:8px}
-#wrap{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
-canvas{background:#111;border:2px solid #00e5ff;border-radius:12px;max-width:95vw}
-.panel{background:rgba(10,14,28,.9);border:1px solid rgba(120,190,255,.25);border-radius:12px;padding:12px;min-width:220px;max-width:300px}
-.panel h3{color:#00e5ff;margin-bottom:8px;font-size:16px}
-.lb-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(120,190,255,.15);font-size:13px}
-.controls{margin-top:10px;display:flex;gap:16px}
-button{padding:12px 22px;font-size:18px;border:0;border-radius:10px;background:#00e5ff;color:#000;font-weight:bold;cursor:pointer}
-button:active{transform:scale(.95)}
-.info{margin-top:8px;color:#8fa6c4;font-size:13px;text-align:center}
-.badge{display:inline-block;padding:2px 8px;border-radius:999px;background:rgba(0,229,255,.15);color:#00e5ff;font-size:12px;margin-left:6px}
+*{margin:0;padding:0;box-sizing:border-box}html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif}
+canvas{display:block}
+#hud{position:fixed;top:10px;left:10px;color:#fff;font-size:14px;background:rgba(0,0,0,.5);padding:8px 12px;border-radius:8px;z-index:10}
+#hud div{margin:2px 0}
+#controls{position:fixed;bottom:20px;width:100%;display:flex;justify-content:space-between;padding:0 20px;z-index:10}
+.ctrl-group{display:flex;flex-direction:column;gap:10px;align-items:center}
+.ctrl-group.right{flex-direction:row}
+button{width:70px;height:70px;border:0;border-radius:50%;background:rgba(0,229,255,.8);color:#000;font-size:13px;font-weight:bold;cursor:pointer;user-select:none;touch-action:none}
+button:active{background:#00e5ff}
+#btnBoost{background:rgba(255,215,0,.9)}
+#joystick{width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1);border:2px solid rgba(0,229,255,.5);position:relative;touch-action:none}
+#knob{width:50px;height:50px;border-radius:50%;background:#00e5ff;position:absolute;top:35px;left:35px;pointer-events:none}
+#shopHint{position:fixed;bottom:200px;left:50%;transform:translateX(-50%);color:#ffd700;font-size:16px;background:rgba(0,0,0,.7);padding:8px 16px;border-radius:8px;display:none;z-index:10}
+#shopModal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;place-items:center;z-index:20}
+#shopModal.open{display:grid}
+#shopBox{background:#0a0f1e;border:1px solid #00e5ff;border-radius:12px;padding:20px;color:#fff;text-align:center}
+#shopBox button{width:auto;height:auto;padding:10px 20px;border-radius:8px;margin:5px}
 </style></head><body>
-<h1>Tesla Road <span class="badge">Live: <span id="liveCount">0</span></span></h1>
-<div id="wrap">
-<canvas id="game" width="400" height="700"></canvas>
-<div class="panel"><h3>Game Leaderboard</h3><div id="lbList"><div class="lb-item">Loading...</div></div>
-<div style="margin-top:10px"><button id="loginBtn">Login with Google</button></div>
-<p class="info" id="userStatus">Not logged in</p></div>
+<div id="hud">
+<div>Speed: <span id="speed">0</span> km/h</div>
+<div>Damage: <span id="damage">0</span>%</div>
+<div>Points: <span id="points">0</span></div>
+<div>Money: <span id="money">0</span> ৳</div>
+<div>Wanted: <span id="wanted">0</span></div>
+<div>Boost: <span id="boost">100</span>%</div>
 </div>
-<div class="controls"><button onclick="moveLeft()">&#8592;</button><button onclick="moveRight()">&#8594;</button></div>
-<p class="info">Arrow keys or buttons. Avoid obstacles, collect coins. Score saves if logged in.</p>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script>
-const firebaseConfig={apiKey:"AIzaSyCfnHmflYAlp8qwlwLiuTubr0Z995yR8Uc",authDomain:"fexo-hub.firebaseapp.com",projectId:"fexo-hub",storageBucket:"fexo-hub.firebasestorage.app",messagingSenderId:"937734056640",appId:"1:937734056640:web:32329e4054e96a6fc51b25"};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore(),auth=firebase.auth();
-
-/* Sound */
-const actx=new (window.AudioContext||window.webkitAudioContext)();
-function beep(f,d,type){try{const o=actx.createOscillator(),g=actx.createGain();o.type=type||"square";o.frequency.value=f;o.connect(g);g.connect(actx.destination);g.gain.value=.08;o.start();o.stop(actx.currentTime+d)}catch(e){}}
-const coinSound=()=>beep(880,.08,"sine"),crashSound=()=>beep(120,.4,"sawtooth");
-
-/* Presence */
-let presenceRef=null;
-function initPresence(){if(!auth.currentUser)return;presenceRef=db.collection("presence").doc(auth.currentUser.uid);
-presenceRef.set({lastActive:Date.now(),email:auth.currentUser.email});
-setInterval(()=>presenceRef.set({lastActive:Date.now(),email:auth.currentUser.email}),30000);
-window.addEventListener("beforeunload",()=>presenceRef.delete())}
-db.collection("presence").onSnapshot(s=>{const now=Date.now();let c=0;s.forEach(d=>{if(now-d.data().lastActive<60000)c++});document.getElementById("liveCount").textContent=c});
-
-/* Auth */
-document.getElementById("loginBtn").onclick=async()=>{try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}catch(e){alert(e.message)}};
-auth.onAuthStateChanged(u=>{document.getElementById("userStatus").textContent=u?("Logged in: "+u.email):"Not logged in";if(u)initPresence()});
-
-/* Leaderboard */
-db.collection("gameScores").orderBy("score","desc").limit(30).onSnapshot(s=>{
-const cutoff=Date.now()-3*86400000;
-const list=s.docs.map(d=>d.data()).filter(d=>d.ts>=cutoff).slice(0,10);
-document.getElementById("lbList").innerHTML=list.length?list.map((d,i)=>`<div class="lb-item"><span>${i+1}. ${d.name||d.email}</span><span>${d.score}</span></div>`).join(""):"<div class='lb-item'>No scores yet</div>";
-});
-
-/* Game */
-const canvas=document.getElementById('game'),ctx=canvas.getContext('2d');
-const W=canvas.width,H=canvas.height,roadLeft=60,roadRight=W-60,roadWidth=roadRight-roadLeft,laneCount=3,laneWidth=roadWidth/laneCount;
-let player={lane:1,x:0,y:H-120,w:40,h:70},obstacles=[],coins=[],particles=[];
-let score=0,coinsCollected=0,speed=6,frame=0,themeIndex=0,running=true,gameOver=false,scoreSaved=false;
-const themes=["mountains","sea","city","war","funny"];let theme=themes[0];
-const laneX=l=>roadLeft+laneWidth*l+laneWidth/2;
-function reset(){player.lane=1;player.x=laneX(1);obstacles=[];coins=[];particles=[];score=0;coinsCollected=0;speed=6;frame=0;themeIndex=0;theme=themes[0];gameOver=false;scoreSaved=false;running=true}
-function moveLeft(){if(player.lane>0)player.lane--}
-function moveRight(){if(player.lane<laneCount-1)player.lane++}
-document.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')moveLeft();if(e.key==='ArrowRight')moveRight();if(e.key===' '&&gameOver)restart()});
-canvas.addEventListener('click',()=>{if(gameOver)restart()});
-function restart(){reset();loop()}
-function spawnObstacle(){const lane=Math.floor(Math.random()*laneCount),t=Math.random();let o={lane,x:laneX(lane),y:-80,w:40,h:70,type:'car'};
-if(t<.2){o.type='cone';o.w=25;o.h=35}else if(t<.35){o.type='barrier';o.w=70;o.h=25}obstacles.push(o)}
-function spawnCoin(){const lane=Math.floor(Math.random()*laneCount);coins.push({lane,x:laneX(lane),y:-30,r:12})}
-function update(){frame++;
-if(frame%Math.max(30,90-Math.floor(speed*3))===0)spawnObstacle();
-if(frame%45===0)spawnCoin();
-if(frame%1500===0){themeIndex=(themeIndex+1)%themes.length;theme=themes[themeIndex]}
-obstacles.forEach(o=>o.y+=speed);coins.forEach(c=>c.y+=speed);
-obstacles=obstacles.filter(o=>o.y<H+100);coins=coins.filter(c=>c.y<H+50);
-obstacles.forEach(o=>{if(Math.abs(o.x-player.x)<(o.w+player.w)/2-10&&Math.abs(o.y-player.y)<(o.h+player.h)/2-10){gameOver=true;running=false;crashSound();saveScore()}});
-coins.forEach((c,i)=>{if(Math.abs(c.x-player.x)<25&&Math.abs(c.y-player.y)<40){coinsCollected++;score+=10;coins.splice(i,1);coinSound()}});
-score+=.1;speed=6+score/300}
-function saveScore(){if(scoreSaved||!auth.currentUser)return;scoreSaved=true;
-db.collection("gameScores").add({name:auth.currentUser.displayName||auth.currentUser.email,email:auth.currentUser.email,score:Math.floor(score),ts:Date.now()})}
-function drawBackground(){ctx.fillStyle='#87ceeb';ctx.fillRect(0,0,W,H);
-if(theme==="mountains"){ctx.fillStyle='#2e8b57';for(let i=0;i<6;i++){let x=(i*90+frame*.2)%W;ctx.beginPath();ctx.moveTo(x,H);ctx.lineTo(x+45,H-120);ctx.lineTo(x+90,H);ctx.fill()}}
-if(theme==="sea"){ctx.fillStyle='#1e90ff';ctx.fillRect(0,0,roadLeft,H);ctx.fillRect(roadRight,0,W-roadRight,H);ctx.fillStyle='#fff';for(let i=0;i<20;i++){let y=(i*40+frame)%H;ctx.fillRect(10,y,20,3);ctx.fillRect(W-30,y,20,3)}}
-if(theme==="city"){ctx.fillStyle='#333';for(let i=0;i<8;i++){let x=(i*60+frame*.3)%W;ctx.fillRect(x,100,40,200)}}
-if(theme==="war"){ctx.fillStyle='#222';ctx.fillRect(0,0,W,H);if(frame%40===0)particles.push({x:Math.random()*W,y:Math.random()*H/2,r:20,life:30})}
-if(theme==="funny"){ctx.fillStyle='#ff69b4';ctx.fillRect(0,0,W,H);ctx.font='40px Arial';ctx.fillText('😂',(frame*2)%W,100);ctx.fillText('🚀',(frame*3)%W,300)}
-particles.forEach(p=>{ctx.fillStyle='orange';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();p.life--;p.r*=.95});particles=particles.filter(p=>p.life>0)}
-function drawRoad(){ctx.fillStyle='#222';ctx.fillRect(roadLeft,0,roadWidth,H);ctx.strokeStyle='#fff';ctx.setLineDash([30,20]);
-for(let i=1;i<laneCount;i++){let x=roadLeft+laneWidth*i;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}ctx.setLineDash([]);
-ctx.fillStyle='#333';ctx.fillRect(0,0,roadLeft,H);ctx.fillRect(roadRight,0,W-roadRight,H)}
-function drawPlayer(){ctx.fillStyle='#00e5ff';ctx.fillRect(player.x-20,player.y-35,40,70);ctx.fillStyle='#000';ctx.fillRect(player.x-18,player.y+20,12,15);ctx.fillRect(player.x+6,player.y+20,12,15)}
-function drawObstacles(){obstacles.forEach(o=>{if(o.type==='car'){ctx.fillStyle='#ff4444';ctx.fillRect(o.x-20,o.y-35,40,70)}
-if(o.type==='cone'){ctx.fillStyle='orange';ctx.beginPath();ctx.moveTo(o.x,o.y-20);ctx.lineTo(o.x-12,o.y+15);ctx.lineTo(o.x+12,o.y+15);ctx.fill()}
-if(o.type==='barrier'){ctx.fillStyle='#ffff00';ctx.fillRect(o.x-35,o.y-12,70,25)}})}
-function drawCoins(){coins.forEach(c=>{ctx.fillStyle='gold';ctx.beginPath();ctx.arc(c.x,c.y,c.r,0,Math.PI*2);ctx.fill()})}
-function drawUI(){ctx.fillStyle='#fff';ctx.font='18px Arial';ctx.fillText('Score: '+Math.floor(score),10,28);ctx.fillText('Coins: '+coinsCollected,10,54);ctx.fillText('Theme: '+theme,10,80)}
-function loop(){if(!running)return;ctx.clearRect(0,0,W,H);drawBackground();drawRoad();drawObstacles();drawCoins();drawPlayer();drawUI();update();
-if(gameOver){ctx.fillStyle='rgba(0,0,0,.75)';ctx.fillRect(0,0,W,H);ctx.fillStyle='#fff';ctx.font='28px Arial';ctx.fillText('GAME OVER',110,300);ctx.font='18px Arial';ctx.fillText('Score: '+Math.floor(score),150,340);
-ctx.fillText(auth.currentUser?'Score saved to leaderboard':'Login to save score',80,380);ctx.fillText('Tap or SPACE to restart',100,420);return}
-requestAnimationFrame(loop)}
-reset();loop();
+<div id="controls">
+<div class="ctrl-group left">
+<div id="joystick"><div id="knob"></div></div>
+<button id="btnUp">SPEED</button>
+<button id="btnBrake">BRAKE</button>
+<button id="btnDown">REVERSE</button>
+<button id="btnBoost">BOOST</button>
+</div>
+<div class="ctrl-group right">
+<button id="btnLeft">LEFT</button>
+<button id="btnRight">RIGHT</button>
+</div>
+</div>
+<div id="shopHint">Press E / tap to enter shop</div>
+<div id="shopModal"><div id="shopBox"><h3>Rickshaw Shop</h3><p>Money: <span id="shopMoney">0</span> ৳</p>
+<button id="btnRepair">Repair (50৳)</button><button id="btnBoostBuy">Speed Upgrade (100৳)</button><button id="btnClose">Close</button></div></div>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+const MAP=5200,HALF=2600;
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+document.body.appendChild(renderer.domElement);
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x87ceeb);
+scene.fog=new THREE.Fog(0x87ceeb,100,1500);
+const camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,3000);
+scene.add(new THREE.HemisphereLight(0xffffff,0x444444,1));
+const dir=new THREE.DirectionalLight(0xffffff,1);dir.position.set(100,200,100);scene.add(dir);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(MAP,MAP),new THREE.MeshLambertMaterial({color:0x228B22}));
+ground.rotation.x=-Math.PI/2;scene.add(ground);
+const roadMat=new THREE.MeshLambertMaterial({color:0x333333});
+const sidewalkMat=new THREE.MeshLambertMaterial({color:0x999999});
+const waterMat=new THREE.MeshLambertMaterial({color:0x1e90ff});
+function addRoad(x,z,w,l){const r=new THREE.Mesh(new THREE.PlaneGeometry(w,l),roadMat);r.rotation.x=-Math.PI/2;r.position.set(x,0.01,z);scene.add(r);}
+for(let x=-2400;x<=2400;x+=400)addRoad(x,0,12,MAP);
+for(let z=-2400;z<=2400;z+=400)addRoad(0,z,MAP,12);
+const pond=new THREE.Mesh(new THREE.CircleGeometry(150,32),waterMat);
+pond.rotation.x=-Math.PI/2;pond.position.set(300,0.05,300);scene.add(pond);
+const river=new THREE.Mesh(new THREE.PlaneGeometry(200,MAP),waterMat);
+river.rotation.x=-Math.PI/2;river.position.set(2400,0.04,0);scene.add(river);
+for(const z of[-1200,0,1200]){const b=new THREE.Mesh(new THREE.PlaneGeometry(220,12),roadMat);b.rotation.x=-Math.PI/2;b.position.set(2400,0.06,z);scene.add(b);}
+const COUNT=3000;
+const bGeo=new THREE.BoxGeometry(1,1,1);
+const bMat=new THREE.MeshLambertMaterial({color:0x888888});
+const inst=new THREE.InstancedMesh(bGeo,bMat,COUNT);
+const dummy=new THREE.Object3D();
+const buildings=[];
+let idx=0;
+while(idx<COUNT){
+const x=Math.random()*MAP-HALF,z=Math.random()*MAP-HALF;
+if(Math.abs(x%400)<15||Math.abs(z%400)<15)continue;
+if(Math.hypot(x-300,z-300)<180)continue;
+if(Math.abs(x-2400)<120)continue;
+const w=8+Math.random()*10,d=8+Math.random()*10,h=6+Math.random()*18;
+dummy.position.set(x,h/2,z);dummy.scale.set(w,h,d);dummy.updateMatrix();
+inst.setMatrixAt(idx,dummy.matrix);
+inst.setColorAt(idx,new THREE.Color().setHSL(Math.random(),0.4,0.5));
+buildings.push({minX:x-w/2,maxX:x+w/2,minZ:z-d/2,maxZ:z+d/2});
+idx++;}
+scene.add(inst);
+const shops=[];
+for(const[sx,sz]of[[-100,-100],[100,-100],[-100,100],[100,100]]){
+const s=new THREE.Mesh(new THREE.BoxGeometry(10,6,10),new THREE.MeshLambertMaterial({color:0xffd700}));
+s.position.set(sx,3,sz);scene.add(s);shops.push({x:sx,z:sz});}
+function buildRickshaw(){const g=new THREE.Group();
+const body=new THREE.Mesh(new THREE.BoxGeometry(1.6,1.2,2.6),new THREE.MeshLambertMaterial({color:0x00ff00}));
+body.position.y=0.8;g.add(body);
+const canopy=new THREE.Mesh(new THREE.CylinderGeometry(0.9,0.9,2.4,12,1,true,0,Math.PI),new THREE.MeshLambertMaterial({color:0xff0000,side:THREE.DoubleSide}));
+canopy.rotation.z=Math.PI/2;canopy.position.set(0,1.6,-0.2);g.add(canopy);
+const wheelGeo=new THREE.CylinderGeometry(0.35,0.35,0.2,12);
+const wheelMat=new THREE.MeshLambertMaterial({color:0x111111});
+for(const[x,z]of[[-0.8,0.9],[0.8,0.9],[-0.8,-0.9],[0.8,-0.9]]){const w=new THREE.Mesh(wheelGeo,wheelMat);w.rotation.z=Math.PI/2;w.position.set(x,0.35,z);g.add(w);}
+const driver=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.8,0.4),new THREE.MeshLambertMaterial({color:0x0000ff}));
+driver.position.set(0,1.4,0.6);g.add(driver);return g;}
+const rickshaw=buildRickshaw();scene.add(rickshaw);
+let pos=new THREE.Vector3(0,0,0),heading=0,speed=0;
+const input={up:false,down:false,left:false,right:false,boost:false};
+addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();
+if(e.key==='w'||e.key==='ArrowUp')input.up=true;if(e.key==='s'||e.key==='ArrowDown')input.down=true;if(e.key==='a'||e.key==='ArrowLeft')input.left=true;if(e.key==='d'||e.key==='ArrowRight')input.right=true;if(e.key==='shift')input.boost=true;if(e.key==='e')openShop()});
+addEventListener('keyup',e=>{if(e.key==='w'||e.key==='ArrowUp')input.up=false;if(e.key==='s'||e.key==='ArrowDown')input.down=false;if(e.key==='a'||e.key==='ArrowLeft')input.left=false;if(e.key==='d'||e.key==='ArrowRight')input.right=false;if(e.key==='shift')input.boost=false});
+function bind(id,prop){const el=document.getElementById(id);
+const on=e=>{e.preventDefault();input[prop]=true};
+const off=()=>{input[prop]=false};
+el.addEventListener('pointerdown',on);el.addEventListener('pointerup',off);el.addEventListener('pointercancel',off);el.addEventListener('pointerleave',off);
+el.addEventListener('touchstart',on,{passive:false});el.addEventListener('touchend',off);el.addEventListener('touchcancel',off);}
+bind('btnUp','up');bind('btnDown','down');bind('btnLeft','left');bind('btnRight','right');bind('btnBoost','boost');
+const joy=document.getElementById('joystick'),knob=document.getElementById('knob');
+let joyActive=false,joyStart={x:0,y:0};
+joy.addEventListener('pointerdown',e=>{joyActive=true;joyStart={x:e.clientX,y:e.clientY};joy.setPointerCapture(e.pointerId)});
+joy.addEventListener('pointermove',e=>{if(!joyActive)return;const dx=e.clientX-joyStart.x,dy=e.clientY-joyStart.y;
+input.left=dx<-20;input.right=dx>20;input.up=dy<-20;input.down=dy>20;
+knob.style.transform=`translate(${Math.max(-30,Math.min(30,dx))}px,${Math.max(-30,Math.min(30,dy))}px)`});
+const joyOff=()=>{joyActive=false;input.left=input.right=input.up=input.down=false;knob.style.transform='translate(0,0)'};
+joy.addEventListener('pointerup',joyOff);joy.addEventListener('pointercancel',joyOff);joy.addEventListener('pointerleave',joyOff);
+const peds=[];
+for(let i=0;i<40;i++){const g=new THREE.Group();
+const body=new THREE.Mesh(new THREE.CapsuleGeometry(0.3,0.8,4,8),new THREE.MeshLambertMaterial({color:new THREE.Color().setHSL(Math.random(),0.6,0.6)}));
+body.position.y=0.9;g.add(body);
+const head=new THREE.Mesh(new THREE.SphereGeometry(0.25,8,8),new THREE.MeshLambertMaterial({color:0xffcc99}));
+head.position.y=1.6;g.add(head);
+g.position.set(Math.random()*1000-500,0,Math.random()*1000-500);scene.add(g);
+peds.push({mesh:g,dir:Math.random()*Math.PI*2,knocked:false,timer:0,chasing:false});}
+const vehicles=[];
+function makeVehicle(type){const g=new THREE.Group();
+if(type==='car'){const b=new THREE.Mesh(new THREE.BoxGeometry(2,1,4),new THREE.MeshLambertMaterial({color:new THREE.Color().setHSL(Math.random(),0.7,0.5)}));b.position.y=0.7;g.add(b);
+const wg=new THREE.CylinderGeometry(0.4,0.4,0.3,10);const wm=new THREE.MeshLambertMaterial({color:0x111111});
+for(const[x,z]of[[-1,1.4],[1,1.4],[-1,-1.4],[1,-1.4]]){const w=new THREE.Mesh(wg,wm);w.rotation.z=Math.PI/2;w.position.set(x,0.4,z);g.add(w);}}
+if(type==='bike'){const b=new THREE.Mesh(new THREE.BoxGeometry(0.6,0.8,1.8),new THREE.MeshLambertMaterial({color:0xff4500}));b.position.y=0.6;g.add(b);
+const wg=new THREE.CylinderGeometry(0.3,0.3,0.15,10);const wm=new THREE.MeshLambertMaterial({color:0x111111});
+for(const z of[0.7,-0.7]){const w=new THREE.Mesh(wg,wm);w.rotation.z=Math.PI/2;w.position.set(0,0.3,z);g.add(w);}}
+scene.add(g);
+const lane=Math.random()<0.5?-3:3;const vertical=Math.random()<0.5;let x,z,dirAngle;
+if(vertical){x=(Math.random()<0.5?-400:0)+lane;z=-600+Math.random()*1200;dirAngle=Math.random()<0.5?0:Math.PI;}
+else{z=(Math.random()<0.5?-400:0)+lane;x=-600+Math.random()*1200;dirAngle=Math.random()<0.5?Math.PI/2:-Math.PI/2;}
+g.position.set(x,0,z);g.rotation.y=dirAngle;
+vehicles.push({mesh:g,type,speed:type==='bike'?18:12,dir:dirAngle});}
+for(let i=0;i<10;i++)makeVehicle('car');
+for(let i=0;i<6;i++)makeVehicle('bike');
+const cops=[];
+function spawnCop(){const g=new THREE.Group();
+const b=new THREE.Mesh(new THREE.BoxGeometry(2,1,4),new THREE.MeshLambertMaterial({color:0x0000ff}));b.position.y=0.7;g.add(b);
+const light=new THREE.Mesh(new THREE.BoxGeometry(0.5,0.3,0.5),new THREE.MeshLambertMaterial({color:0xff0000}));light.position.set(0,1.3,0);g.add(light);
+g.position.set(Math.random()*200-100,0,Math.random()*200-100);scene.add(g);cops.push({mesh:g});}
+let damage=0,points=0,money=0,wanted=0,boostEnergy=100,speedCap=33.3;
+function updateHUD(){document.getElementById('damage').textContent=Math.round(damage);document.getElementById('points').textContent=points;document.getElementById('money').textContent=money;document.getElementById('wanted').textContent=wanted;document.getElementById('boost').textContent=Math.round(boostEnergy);document.getElementById('shopMoney').textContent=money;}
+function aabbHit(px,pz){for(const b of buildings){if(px>b.minX-1&&px<b.maxX+1&&pz>b.minZ-1&&pz<b.maxZ+1)return b}return null}
+const clock=new THREE.Clock();
+function animate(){requestAnimationFrame(animate);
+const dt=Math.min(clock.getDelta(),0.05);
+let throttle=0;if(input.up)throttle=1;if(input.down)throttle=-0.6;
+let steer=0;if(input.left)steer=1;if(input.right)steer=-1;
+let boosting=false;
+if(input.boost&&boostEnergy>0){boosting=true;boostEnergy-=30*dt}else{boostEnergy=Math.min(100,boostEnergy+10*dt)}
+const maxSpeed=boosting?62.5:speedCap;
+speed+=throttle*(boosting?50:25)*dt;speed*=0.98;
+if(input.down&&speed>0)speed-=30*dt;
+speed=Math.max(-15,Math.min(maxSpeed,speed));
+heading+=steer*1.8*dt*(speed/10);
+const forward=new THREE.Vector3(Math.sin(heading),0,Math.cos(heading));
+pos.addScaledVector(forward,speed*dt);
+pos.x=Math.max(-HALF+50,Math.min(HALF-50,pos.x));pos.z=Math.max(-HALF+50,Math.min(HALF-50,pos.z));
+const hit=aabbHit(pos.x,pos.z);
+if(hit){pos.addScaledVector(forward,-speed*dt);speed*=-0.3;damage+=5;updateHUD();}
+rickshaw.position.copy(pos);rickshaw.rotation.y=heading;
+const camOffset=new THREE.Vector3(0,6,-12).applyAxisAngle(new THREE.Vector3(0,1,0),heading);
+camera.position.copy(pos).add(camOffset);camera.lookAt(pos.x,1,pos.z);
+peds.forEach(p=>{
+if(p.knocked){p.timer-=dt;if(p.timer<=0){p.knocked=false;p.mesh.rotation.x=0;p.chasing=true}}
+else if(p.chasing){const dx=pos.x-p.mesh.position.x,dz=pos.z-p.mesh.position.z,dist=Math.hypot(dx,dz);
+if(dist<30){p.mesh.position.x+=dx/dist*6*dt;p.mesh.position.z+=dz/dist*6*dt;p.mesh.rotation.y=Math.atan2(dx,dz);}}
+else{p.mesh.position.x+=Math.sin(p.dir)*6*dt;p.mesh.position.z+=Math.cos(p.dir)*6*dt;if(Math.random()<0.01)p.dir+=Math.PI/2;}
+const dx=pos.x-p.mesh.position.x,dz=pos.z-p.mesh.position.z;
+if(Math.hypot(dx,dz)<1.5&&!p.knocked){p.knocked=true;p.timer=3;p.mesh.rotation.x=Math.PI/2;points+=10;money+=10;wanted+=1;updateHUD();}});
+vehicles.forEach(v=>{
+v.mesh.position.x+=Math.sin(v.dir)*v.speed*dt;v.mesh.position.z+=Math.cos(v.dir)*v.speed*dt;
+if(v.mesh.position.x>HALF)v.mesh.position.x=-HALF;if(v.mesh.position.x<-HALF)v.mesh.position.x=HALF;
+if(v.mesh.position.z>HALF)v.mesh.position.z=-HALF;if(v.mesh.position.z<-HALF)v.mesh.position.z=HALF;
+const dx=pos.x-v.mesh.position.x,dz=pos.z-v.mesh.position.z;
+if(Math.hypot(dx,dz)<2.5){damage+=v.type==='bike'?10:20;points+=v.type==='bike'?15:20;money+=v.type==='bike'?15:20;wanted+=1;
+v.mesh.position.addScaledVector(new THREE.Vector3(dx,0,dz).normalize(),3);updateHUD();}});
+cops.forEach(c=>{const dx=pos.x-c.mesh.position.x,dz=pos.z-c.mesh.position.z,dist=Math.hypot(dx,dz);
+if(dist>2){c.mesh.position.x+=dx/dist*10*dt;c.mesh.position.z+=dz/dist*10*dt;c.mesh.rotation.y=Math.atan2(dx,dz);}
+else{money=Math.max(0,money-20);updateHUD();}});
+if(wanted>3&&cops.length<2)spawnCop();
+let nearShop=false;
+shops.forEach(s=>{if(Math.hypot(pos.x-s.x,pos.z-s.z)<8)nearShop=true});
+document.getElementById('shopHint').style.display=nearShop?'block':'none';
+document.getElementById('speed').textContent=Math.abs(Math.round(speed*3.6));
+renderer.render(scene,camera);}
+animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+function openShop(){if(document.getElementById('shopHint').style.display==='block')document.getElementById('shopModal').classList.add('open')}
+document.getElementById('btnClose').onclick=()=>document.getElementById('shopModal').classList.remove('open');
+document.getElementById('btnRepair').onclick=()=>{if(money>=50){money-=50;damage=0;updateHUD();document.getElementById('shopModal').classList.remove('open')}};
+document.getElementById('btnBoostBuy').onclick=()=>{if(money>=100){money-=100;speedCap=41.7;updateHUD();document.getElementById('shopModal').classList.remove('open')}};
 </script></body></html>
