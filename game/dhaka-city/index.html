@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="theme-color" content="#000000"/>
+<title>Dhaka Rush V3 — Mobile Open World</title>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="hud-top">
+    <div id="money">৳ 500</div>
+    <div id="wanted">Wanted: ★</div>
+    <div id="mission">Mission: Cha Khoroch Recovery</div>
+  </div>
+
+  <div id="dialogue" class="hidden">
+    <div id="speaker">NPC</div>
+    <div id="dialogue-text"></div>
+    <div id="dialogue-close">বন্ধ করুন</div>
+  </div>
+
+  <div id="interior-ui" class="hidden">
+    <div id="interior-title">Cha er Dokan</div>
+    <div id="interior-text">আপনি দোকানে ঢুকেছেন। এখানে চা, সিগারেট, চিপস এবং গসিপ পাওয়া যায়।</div>
+    <button id="interior-exit">বাইরে যান</button>
+  </div>
+
+  <div id="toast"></div>
+  <div id="minimap">
+    <div id="player-dot"></div>
+    <div id="mission-dot"></div>
+  </div>
+
+  <div id="touch-controls">
+    <div id="joystick">
+      <div id="joystick-base"><div id="joystick-knob"></div></div>
+    </div>
+
+    <div id="action-buttons">
+      <button id="btn-run" class="action-btn">দৌড়</button>
+      <button id="btn-punch" class="action-btn danger">মার</button>
+      <button id="btn-talk" class="action-btn info">কথা</button>
+      <button id="btn-enter" class="action-btn gold">ঢুকুন</button>
+      <button id="btn-vehicle" class="action-btn green">গাড়ি</button>
+      <button id="btn-horn" class="action-btn">হর্ন</button>
+    </div>
+  </div>
+
+  <div id="look-area"></div>
+</div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.webgpu.js","three/tsl":"https://cdn.jsdelivr.net/npm/three@0.185.0/build/three.tsl.js"}}
+</script>
+<script type="module" src="main.js"></script>
+</body>
+</html>
