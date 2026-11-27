@@ -1,6 +1,6 @@
-# FEXO HUB Step 1 v5
+# FEXO HUB Step 1 v6
 
-Added Game Hub (separate page with game list) and live theme background. Fixed footer, 3D-style UI, shop categories.
+Game Hub now shop-like: game cards with image, popup with details and Play button. Admin can add/edit/delete games (name, image, desc, link) from Admin > Games.
 
 Upload index.html, style.css, script.js, config.js, README.md to GitHub.
 Paste firestore.rules and storage.rules in Firebase and Publish.

@@ -1,7 +1,7 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const db=firebase.firestore(),storage=firebase.storage(),auth=firebase.auth();
 const siteRef=db.collection("site").doc("main");
-let site={content:{...DEFAULT_CONTENT},topics:[],music:[]},products=[],orders=[],myOrders=[],editingProduct=null,selectedFiles=[],currentProduct=null,pendingOrder=null,currentSection="home",currentTopic="all";
+let site={content:{...DEFAULT_CONTENT},topics:[],music:[]},products=[],orders=[],myOrders=[],games=[],editingProduct=null,editingGame=null,selectedFiles=[],selectedGameImage=null,currentProduct=null,currentGame=null,pendingOrder=null,currentSection="home",currentTopic="all";
 const sections=["home","games","sponsor"];
 const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -13,14 +13,15 @@ let tx=0;$("#app").addEventListener("touchstart",e=>tx=e.touches[0].clientX);
 $("#app").addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>60){let i=sections.indexOf(currentSection),n=i+(dx<0?1:-1);if(n>=0&&n<sections.length)showSection(sections[n])}});
 function scrollToId(id){document.getElementById(id).scrollIntoView({behavior:"smooth"})}
 function initSite(){siteRef.onSnapshot(d=>{const x=d.exists?d.data():{};site={content:{...DEFAULT_CONTENT,...(x.content||{})},topics:x.topics||[],music:x.music||[]};renderAll();if(isAdmin())renderAdmin()});
-db.collection("products").onSnapshot(s=>{products=s.docs.map(d=>({id:d.id,...d.data(),images:d.data().images||[]}));renderAll();if(isAdmin())renderProductsAdmin()})}
+db.collection("products").onSnapshot(s=>{products=s.docs.map(d=>({id:d.id,...d.data(),images:d.data().images||[]}));renderAll();if(isAdmin())renderProductsAdmin()});
+db.collection("games").onSnapshot(s=>{games=s.docs.map(d=>({id:d.id,...d.data()}));renderGames();if(isAdmin())renderGamesAdmin()})}
 function listenOrders(){if(!isAdmin())return;db.collection("orders").onSnapshot(s=>{orders=s.docs.map(d=>({id:d.id,...d.data()}));renderOrders()})}
 function listenMyOrders(){if(!auth.currentUser){myOrders=[];renderMyOrders();return}db.collection("orders").where("customer","==",auth.currentUser.email).onSnapshot(s=>{myOrders=s.docs.map(d=>({id:d.id,...d.data()}));renderMyOrders()})}
 function trackVisitor(){const today=new Date().toISOString().slice(0,10);if(localStorage.getItem("v_"+today)!=="1"){db.collection("visits").add({date:today,ts:Date.now()});localStorage.setItem("v_"+today,"1")}db.collection("visits").where("date","==",today).onSnapshot(s=>{$("#visitorCount").textContent=s.size})}
 function renderAll(){$("#year").textContent=new Date().getFullYear();$("#footerBrand").textContent=site.content.siteName;document.title=site.content.siteName;
 $("#heroEyebrow").textContent=site.content.eyebrow;$("#heroTitle").textContent=site.content.title;$("#heroText").textContent=site.content.text;
 $("#bizTitle").textContent=site.content.sponsorTitle;$("#bizText").textContent=site.content.sponsorText;$("#bizEmail").textContent=ADMIN_EMAIL;$("#bizPhone").textContent=SUPPORT_PHONE;$("#bizLink").href=site.content.sponsorLink||"#";$("#bizCta").href=site.content.sponsorLink||"#";
-renderNav();renderTopicsNav();renderCategoryBar();renderProducts();renderMyOrders();renderMusic();renderLeaderboard();renderUser()}
+renderNav();renderTopicsNav();renderCategoryBar();renderProducts();renderGames();renderMyOrders();renderMusic();renderLeaderboard();renderUser()}
 function renderNav(){const n=$("#mainNav");n.innerHTML="";[["home","Home"],["games","Game Hub"],["sponsor","Sponsorship"]].forEach(([id,l])=>{const a=document.createElement("a");a.textContent=l;a.onclick=()=>showSection(id);if(currentSection===id)a.style.color="#fff";n.appendChild(a)})}
 function renderTopicsNav(){site.topics.forEach(t=>(t.pages||[]).forEach(p=>{const a=document.createElement("a");a.textContent=t.name+" / "+p.name;a.onclick=()=>filterProducts(t.id,p.id);$("#mainNav").appendChild(a)}))}
 function renderCategoryBar(){const bar=$("#categoryBar");bar.innerHTML="";
@@ -29,6 +30,9 @@ site.topics.forEach(t=>{const b=document.createElement("button");b.textContent=t
 function renderProducts(){let list=products;if(currentTopic!=="all")list=list.filter(p=>p.topicId===currentTopic);
 $("#productsGrid").innerHTML=list.map(p=>{const out=p.stock==="out";return `<article class="product" data-id="${p.id}"><img class="thumb" src="${esc(p.images[0]||"https://placehold.co/600x600/0a1020/00e5ff?text=FEXO+HUB")}"><div class="product-body"><h4>${esc(p.name)}</h4><div class="price">৳${Number(p.price).toFixed(2)}</div><div class="stock ${out?"out":"in"}">${out?"Out of stock":"In stock"}</div></div></article>`}).join("");
 $("#emptyState").classList.toggle("hidden",list.length>0);$$("#productsGrid .product").forEach(el=>el.onclick=()=>showProduct(el.dataset.id))}
+function renderGames(){$("#gamesGrid").innerHTML=games.map(g=>`<article class="game-card" data-id="${g.id}"><img src="${esc(g.image||"https://placehold.co/600x340/0a1020/00e5ff?text=GAME")}"><div class="game-body"><h3>${esc(g.name)}</h3><p>${esc(g.desc||"")}</p></div></article>`).join("");
+$("#gamesEmpty").classList.toggle("hidden",games.length>0);$$("#gamesGrid .game-card").forEach(el=>el.onclick=()=>showGame(el.dataset.id))}
+function showGame(id){const g=games.find(x=>x.id===id);if(!g)return;currentGame=g;$("#gameName").textContent=g.name;$("#gameDesc").textContent=g.desc||"";$("#gameImage").innerHTML=`<img src="${esc(g.image||"https://placehold.co/600x340/0a1020/00e5ff?text=GAME")}">`;$("#gamePlay").href=g.url||"#";openModal("#gameModal")}
 function filterProducts(t,p){currentTopic=t;renderCategoryBar();renderProducts();scrollToId("shop")}
 function showProduct(id){const p=products.find(x=>x.id===id);if(!p)return;currentProduct=p;$("#productName").textContent=p.name;$("#productPrice").textContent="৳"+Number(p.price).toFixed(2);$("#productOldPrice").textContent=p.oldPrice?"৳"+Number(p.oldPrice).toFixed(2):"";$("#productDetails").textContent=p.details||"";const out=p.stock==="out";$("#productStock").textContent=out?"Out of stock":"In stock";$("#productStock").className="stock "+(out?"out":"in");$("#orderBtn").disabled=out;$("#orderBtn").textContent=out?"Out of stock":"Order now (COD)";$("#productImages").innerHTML=p.images.map(i=>`<img src="${esc(i)}">`).join("")||`<img src="https://placehold.co/800x600/0a1020/00e5ff?text=FEXO+HUB">`;openModal("#productModal")}
 function renderMusic(){$("#musicList").innerHTML=site.music.map(m=>`<div class="music-item"><div><strong>${esc(m.name)}</strong></div><button class="btn btn-ghost" data-play="${esc(m.url)}">Play</button></div>`).join("")||`<p class="empty">No music.</p>`;$$("#musicList [data-play]").forEach(b=>b.onclick=()=>{const a=$("#siteMusic");if(a.getAttribute("src")!==b.dataset.play){a.src=b.dataset.play;a.play()}else a.paused?a.play():a.pause()})}
@@ -57,7 +61,7 @@ $("#adminLoginForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(
 $("#adminClose").onclick=async()=>{$("#adminPanel").classList.add("hidden");await auth.signOut()};
 function openAdmin(){$("#adminPanel").classList.remove("hidden");renderAdmin();listenOrders()}
 $$(".admin-tab").forEach(b=>b.onclick=()=>{$$(".admin-tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");$$(".admin-view").forEach(v=>v.classList.add("hidden"));$("#tab-"+b.dataset.tab).classList.remove("hidden")});
-function renderAdmin(){const c=$("#contentForm").elements;c.siteName.value=site.content.siteName||"";c.heroTitle.value=site.content.title||"";c.heroText.value=site.content.text||"";c.sponsorTitle.value=site.content.sponsorTitle||"";c.sponsorText.value=site.content.sponsorText||"";c.sponsorLink.value=site.content.sponsorLink||"";renderTopicsAdmin();refreshTopicSelect();renderProductsAdmin();renderMusicAdmin();renderOrders()}
+function renderAdmin(){const c=$("#contentForm").elements;c.siteName.value=site.content.siteName||"";c.heroTitle.value=site.content.title||"";c.heroText.value=site.content.text||"";c.sponsorTitle.value=site.content.sponsorTitle||"";c.sponsorText.value=site.content.sponsorText||"";c.sponsorLink.value=site.content.sponsorLink||"";renderTopicsAdmin();refreshTopicSelect();renderProductsAdmin();renderGamesAdmin();renderMusicAdmin();renderOrders()}
 function renderTopicsAdmin(){$("#topicsAdmin").innerHTML=site.topics.map(t=>`<div class="admin-item"><div><strong>${esc(t.name)}</strong></div><div><button onclick="addPage('${t.id}')">Add page</button><button onclick="delTopic('${t.id}')">Delete</button></div></div>`).join("")}
 async function addPage(id){const n=prompt("Page name");if(!n)return;await siteRef.set({topics:site.topics.map(t=>t.id===id?{...t,pages:[...(t.pages||[]),{id:crypto.randomUUID(),name:n}]}:t)},{merge:true});toast("Added")}
 async function delTopic(id){if(!confirm("Delete?"))return;await siteRef.set({topics:site.topics.filter(t=>t.id!==id)},{merge:true});toast("Deleted")}
@@ -79,12 +83,24 @@ async function toggleStock(id){const p=products.find(x=>x.id===id);await db.coll
 function editProduct(id){const p=products.find(x=>x.id===id);editingProduct=id;const f=$("#productForm").elements;f.pname.value=p.name;f.price.value=p.price;f.oldPrice.value=p.oldPrice||"";f.stock.value=p.stock||"in";f.details.value=p.details||"";f.topic.value=p.topicId;updatePageOptions();f.page.value=p.pageId;$("#imagePreview").innerHTML=p.images.map(i=>`<img src="${esc(i)}" width="50">`).join("");$("#cancelProduct").classList.remove("hidden")}
 async function delProduct(id){if(!confirm("Delete?"))return;await db.collection("products").doc(id).delete();toast("Deleted")}
 $("#productSearchAdmin").oninput=renderProductsAdmin;
+/* Games admin */
+$("#gameImageInput").onchange=e=>{selectedGameImage=e.target.files[0];$("#gameImagePreview").innerHTML=selectedGameImage?`<img src="${URL.createObjectURL(selectedGameImage)}" width="80">`:""};
+const resetGameForm=()=>{editingGame=null;selectedGameImage=null;$("#gameImagePreview").innerHTML="";$("#cancelGame").classList.add("hidden");$("#gameForm").reset()};
+$("#gameForm").onsubmit=async e=>{e.preventDefault();if(!isAdmin())return toast("Admin only");const f=new FormData(e.target),id=editingGame||crypto.randomUUID();const btn=e.target.querySelector("button.btn-neon");btn.disabled=true;
+try{let image=null;if(selectedGameImage){const ref=storage.ref(`games/${id}/${Date.now()}-${selectedGameImage.name}`);await ref.put(selectedGameImage);image=await ref.getDownloadURL()}
+const old=editingGame?games.find(g=>g.id===editingGame):null;
+const game={name:f.get("gname"),desc:f.get("gdesc"),url:f.get("gurl"),image:image||(old?.image||null),createdAt:old?.createdAt||Date.now()};
+await db.collection("games").doc(id).set(game);resetGameForm();toast("Saved")}catch(err){toast(err.message)}finally{btn.disabled=false}};
+$("#cancelGame").onclick=resetGameForm;
+function renderGamesAdmin(){$("#gamesAdmin").innerHTML=games.map(g=>`<div class="admin-item"><div><strong>${esc(g.name)}</strong><br><small>${esc(g.url)}</small></div><div><button onclick="editGame('${g.id}')">Edit</button><button onclick="delGame('${g.id}')">Delete</button></div></div>`).join("")}
+function editGame(id){const g=games.find(x=>x.id===id);editingGame=id;const f=$("#gameForm").elements;f.gname.value=g.name;f.gdesc.value=g.desc||"";f.gurl.value=g.url||"";$("#gameImagePreview").innerHTML=g.image?`<img src="${esc(g.image)}" width="80">`:"";$("#cancelGame").classList.remove("hidden")}
+async function delGame(id){if(!confirm("Delete?"))return;await db.collection("games").doc(id).delete();toast("Deleted")}
 $("#musicForm").onsubmit=async e=>{e.preventDefault();if(!isAdmin())return toast("Admin only");const f=new FormData(e.target),file=f.get("song"),name=f.get("sname");
 try{const id=crypto.randomUUID(),ref=storage.ref(`music/${id}-${file.name}`);await ref.put(file);const url=await ref.getDownloadURL();await siteRef.set({music:[...site.music,{id,name,url}]},{merge:true});e.target.reset();toast("Uploaded")}catch(err){toast(err.message)}};
 function renderMusicAdmin(){$("#musicAdmin").innerHTML=site.music.map(m=>`<div class="admin-item"><div><strong>${esc(m.name)}</strong></div><div><button onclick="delMusic('${m.id}')">Delete</button></div></div>`).join("")}
 async function delMusic(id){const m=site.music.find(x=>x.id===id);try{await storage.refFromURL(m.url).delete()}catch(e){}await siteRef.set({music:site.music.filter(x=>x.id!==id)},{merge:true});toast("Deleted")}
 function renderOrders(){const list=[...orders].sort((a,b)=>b.createdAt-a.createdAt);$("#ordersAdmin").innerHTML=list.map(o=>`<div class="admin-item"><div><strong>${esc(o.productName)}</strong> x ${o.quantity}<br><span class="status ${o.status}">${o.status}</span><br><small>${esc(o.name)} • ${esc(o.phone)} • ${esc(o.customer)}</small><br><small>${esc(o.division)}, ${esc(o.district)}, ${esc(o.upazila)}</small><br><small>${esc(o.address)}</small></div><div><button onclick="setStatus('${o.id}','accepted')">Accept</button><button onclick="setStatus('${o.id}','shipped')">Ship</button><button onclick="setStatus('${o.id}','delivered')">Deliver</button><button onclick="setStatus('${o.id}','cancelled')">Cancel</button></div></div>`).join("")||`<p class="empty">No orders.</p>`}
-$("#exportData").onclick=()=>{const b=new Blob([JSON.stringify({site,products,orders},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup.json";a.click()};
+$("#exportData").onclick=()=>{const b=new Blob([JSON.stringify({site,products,orders,games},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup.json";a.click()};
 $("#searchInput").oninput=e=>{const q=e.target.value.toLowerCase();if(!q)return renderProducts();renderProducts(products.filter(p=>p.name.toLowerCase().includes(q)));scrollToId("shop")};
 $("#searchBtn").onclick=()=>$("#searchInput").dispatchEvent(new Event("input"));
 renderAll();initSite();trackVisitor();
