@@ -31,6 +31,20 @@
 <div id="gamesGrid" class="game-cards"></div><p id="gamesEmpty" class="empty hidden">No games yet. Admin can add from Admin panel.</p>
 </section>
 
+
+<!-- GAME INTERFACE (per game leaderboard) -->
+<section id="gameview" class="hidden">
+<div class="gv-wrap">
+<button class="btn btn-ghost" onclick="showSection('games')">&larr; Game Hub</button>
+<div class="gv-head"><img id="gvImage" alt=""><div class="gv-info"><h2 id="gvTitle"></h2><p id="gvDesc"></p>
+<button id="gvPlay" class="btn btn-neon gv-play">&#9654; Play now</button></div></div>
+<div class="gv-sub"><strong>&#127942; Leaderboard</strong><span id="gvReset"></span></div>
+<div id="gvMine" class="gv-mine"></div>
+<div id="lbList" class="lb-list"></div>
+<p id="lbEmpty" class="empty hidden">No scores yet. Be the first!</p>
+<div id="lbSentinel" class="lb-sentinel"><span id="lbLoader" class="hidden">Loading...</span></div>
+</div></section>
+
 <!-- SPONSORSHIP BUSINESS PAGE -->
 <section id="sponsor" class="biz hidden">
 <div class="biz-hero"><div class="biz-inner"><p class="biz-eyebrow">PARTNER WITH US</p><h1 id="bizTitle">Grow your brand with FEXO HUB</h1>
@@ -52,10 +66,7 @@
 <div id="productStock" class="stock"></div><p id="productDetails"></p><button id="orderBtn" class="btn btn-neon full">Order now (COD)</button>
 <p class="tiny">Google sign-in required. Cancel within 15 min.</p></div></div></div>
 
-<div id="gameModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button>
-<div id="gameImage" class="game-image"></div>
-<h3 id="gameName"></h3><p id="gameDesc"></p>
-<a id="gamePlay" class="btn btn-neon full" href="#">Play now</a></div></div>
+<div id="gamePlayer" class="game-player hidden"><div class="gp-bar"><strong id="gpTitle"></strong><button id="gpClose" class="btn btn-ghost">&times; Exit</button></div><iframe id="gpFrame" allow="fullscreen; autoplay; gamepad" title="game"></iframe></div>
 
 <div id="accountModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Account</h3>
 <div id="googleArea"><button id="googleSignIn" class="btn btn-neon full">Continue with Google</button></div>
@@ -76,12 +87,11 @@
 
 <div id="adminPanel" class="admin-panel hidden"><aside class="admin-side"><div class="admin-brand">FEXO<span>ADMIN</span></div>
 <button class="admin-tab active" data-tab="content">Content</button><button class="admin-tab" data-tab="topics">Topics</button><button class="admin-tab" data-tab="products">Products</button>
-<button class="admin-tab" data-tab="games">Games</button><button class="admin-tab" data-tab="music">Music</button><button class="admin-tab" data-tab="orders">Orders</button><button class="admin-tab" data-tab="backup">Backup</button>
+<button class="admin-tab" data-tab="music">Music</button><button class="admin-tab" data-tab="orders">Orders</button><button class="admin-tab" data-tab="backup">Backup</button>
 <button id="adminClose" class="btn btn-ghost full">Exit</button></aside><section class="admin-main">
 <div id="tab-content" class="admin-view"><h2>Site content</h2><form id="contentForm" class="admin-form"><label>Site name<input name="siteName"></label><label>Hero title<input name="heroTitle"></label><label>Hero text<textarea name="heroText"></textarea></label><label>Sponsor title<input name="sponsorTitle"></label><label>Sponsor text<textarea name="sponsorText"></textarea></label><label>Sponsor link<input name="sponsorLink"></label><button class="btn btn-neon">Save</button></form></div>
 <div id="tab-topics" class="admin-view hidden"><h2>Topics</h2><form id="topicForm" class="admin-form"><label>Topic<input name="name" required></label><label>Page<input name="page" required></label><button class="btn btn-neon">Add</button></form><div id="topicsAdmin" class="admin-list"></div></div>
 <div id="tab-products" class="admin-view hidden"><h2>Products</h2><form id="productForm" class="admin-form"><label>Name<input name="pname" required></label><label>Price<input name="price" type="number" required></label><label>Old price<input name="oldPrice" type="number"></label><label>Stock<select name="stock"><option value="in">In stock</option><option value="out">Out of stock</option></select></label><label>Details<textarea name="details"></textarea></label><label>Topic<select id="productTopic" name="topic"></select></label><label>Page<select id="productPage" name="page"></select></label><label>Images<input id="productImagesInput" type="file" accept="image/*" multiple></label><div id="imagePreview" class="thumbs"></div><button class="btn btn-neon">Save</button><button id="cancelProduct" class="btn btn-ghost hidden">Cancel</button></form><input id="productSearchAdmin" placeholder="Search"><div id="productsAdmin" class="admin-list"></div></div>
-<div id="tab-games" class="admin-view hidden"><h2>Games</h2><form id="gameForm" class="admin-form"><label>Name<input name="gname" required></label><label>Image<input id="gameImageInput" name="gimage" type="file" accept="image/*"></label><div id="gameImagePreview" class="thumbs"></div><label>Description<textarea name="gdesc"></textarea></label><label>Game link<input name="gurl" required placeholder="games/rickshaw-city/"></label><button class="btn btn-neon">Save</button><button id="cancelGame" class="btn btn-ghost hidden">Cancel</button></form><div id="gamesAdmin" class="admin-list"></div></div>
 <div id="tab-music" class="admin-view hidden"><h2>Music</h2><form id="musicForm" class="admin-form"><label>Song name<input name="sname" required></label><label>Audio<input name="song" type="file" accept="audio/*" required></label><button class="btn btn-neon">Upload</button></form><div id="musicAdmin" class="admin-list"></div></div>
 <div id="tab-orders" class="admin-view hidden"><h2>Orders</h2><div id="ordersAdmin" class="admin-list"></div></div>
 <div id="tab-backup" class="admin-view hidden"><h2>Backup</h2><button id="exportData" class="btn btn-neon">Download backup</button></div>

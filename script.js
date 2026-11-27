@@ -1,7 +1,7 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const db=firebase.firestore(),storage=firebase.storage(),auth=firebase.auth();
 const siteRef=db.collection("site").doc("main");
-let site={content:{...DEFAULT_CONTENT},topics:[],music:[]},products=[],orders=[],myOrders=[],games=[],editingProduct=null,editingGame=null,selectedFiles=[],selectedGameImage=null,currentProduct=null,currentGame=null,pendingOrder=null,currentSection="home",currentTopic="all";
+let site={content:{...DEFAULT_CONTENT},topics:[],music:[]},products=[],orders=[],myOrders=[],games=GAMES,editingProduct=null,selectedFiles=[],currentProduct=null,currentGame=null,pendingOrder=null,currentSection="home",currentTopic="all";
 const sections=["home","games","sponsor"];
 const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -10,11 +10,10 @@ $$(".modal").forEach(m=>m.addEventListener("click",e=>{if(e.target===m||e.target
 const isAdmin=()=>!!auth.currentUser&&auth.currentUser.email===ADMIN_EMAIL;
 function showSection(id){document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));const el=document.getElementById(id);el.classList.remove("hidden");el.classList.add("slide-in");setTimeout(()=>el.classList.remove("slide-in"),300);currentSection=id;renderNav()}
 let tx=0;$("#app").addEventListener("touchstart",e=>tx=e.touches[0].clientX);
-$("#app").addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>60){let i=sections.indexOf(currentSection),n=i+(dx<0?1:-1);if(n>=0&&n<sections.length)showSection(sections[n])}});
+$("#app").addEventListener("touchend",e=>{const dx=e.changedTouches[0].clientX-tx;if(Math.abs(dx)>60){let i=sections.indexOf(currentSection);if(i<0)return;let n=i+(dx<0?1:-1);if(n>=0&&n<sections.length)showSection(sections[n])}});
 function scrollToId(id){document.getElementById(id).scrollIntoView({behavior:"smooth"})}
 function initSite(){siteRef.onSnapshot(d=>{const x=d.exists?d.data():{};site={content:{...DEFAULT_CONTENT,...(x.content||{})},topics:x.topics||[],music:x.music||[]};renderAll();if(isAdmin())renderAdmin()});
-db.collection("products").onSnapshot(s=>{products=s.docs.map(d=>({id:d.id,...d.data(),images:d.data().images||[]}));renderAll();if(isAdmin())renderProductsAdmin()});
-db.collection("games").onSnapshot(s=>{games=s.docs.map(d=>({id:d.id,...d.data()}));renderGames();if(isAdmin())renderGamesAdmin()})}
+db.collection("products").onSnapshot(s=>{products=s.docs.map(d=>({id:d.id,...d.data(),images:d.data().images||[]}));renderAll();if(isAdmin())renderProductsAdmin()});}
 function listenOrders(){if(!isAdmin())return;db.collection("orders").onSnapshot(s=>{orders=s.docs.map(d=>({id:d.id,...d.data()}));renderOrders()})}
 function listenMyOrders(){if(!auth.currentUser){myOrders=[];renderMyOrders();return}db.collection("orders").where("customer","==",auth.currentUser.email).onSnapshot(s=>{myOrders=s.docs.map(d=>({id:d.id,...d.data()}));renderMyOrders()})}
 function trackVisitor(){const today=new Date().toISOString().slice(0,10);if(localStorage.getItem("v_"+today)!=="1"){db.collection("visits").add({date:today,ts:Date.now()});localStorage.setItem("v_"+today,"1")}db.collection("visits").where("date","==",today).onSnapshot(s=>{$("#visitorCount").textContent=s.size})}
@@ -22,7 +21,7 @@ function renderAll(){$("#year").textContent=new Date().getFullYear();$("#footerB
 $("#heroEyebrow").textContent=site.content.eyebrow;$("#heroTitle").textContent=site.content.title;$("#heroText").textContent=site.content.text;
 $("#bizTitle").textContent=site.content.sponsorTitle;$("#bizText").textContent=site.content.sponsorText;$("#bizEmail").textContent=ADMIN_EMAIL;$("#bizPhone").textContent=SUPPORT_PHONE;$("#bizLink").href=site.content.sponsorLink||"#";$("#bizCta").href=site.content.sponsorLink||"#";
 renderNav();renderTopicsNav();renderCategoryBar();renderProducts();renderGames();renderMyOrders();renderMusic();renderLeaderboard();renderUser()}
-function renderNav(){const n=$("#mainNav");n.innerHTML="";[["home","Home"],["games","Game Hub"],["sponsor","Sponsorship"]].forEach(([id,l])=>{const a=document.createElement("a");a.textContent=l;a.onclick=()=>showSection(id);if(currentSection===id)a.style.color="#fff";n.appendChild(a)})}
+function renderNav(){const n=$("#mainNav");n.innerHTML="";[["home","Home"],["games","Game Hub"],["sponsor","Sponsorship"]].forEach(([id,l])=>{const a=document.createElement("a");a.textContent=l;a.onclick=()=>showSection(id);if(currentSection===id||(id==="games"&&currentSection==="gameview"))a.style.color="#fff";n.appendChild(a)})}
 function renderTopicsNav(){site.topics.forEach(t=>(t.pages||[]).forEach(p=>{const a=document.createElement("a");a.textContent=t.name+" / "+p.name;a.onclick=()=>filterProducts(t.id,p.id);$("#mainNav").appendChild(a)}))}
 function renderCategoryBar(){const bar=$("#categoryBar");bar.innerHTML="";
 const all=document.createElement("button");all.textContent="All";all.className=currentTopic==="all"?"active":"";all.onclick=()=>{currentTopic="all";renderCategoryBar();renderProducts()};bar.appendChild(all);
@@ -31,13 +30,12 @@ function renderProducts(){let list=products;if(currentTopic!=="all")list=list.fi
 $("#productsGrid").innerHTML=list.map(p=>{const out=p.stock==="out";return `<article class="product" data-id="${p.id}"><img class="thumb" src="${esc(p.images[0]||"https://placehold.co/600x600/0a1020/00e5ff?text=FEXO+HUB")}"><div class="product-body"><h4>${esc(p.name)}</h4><div class="price">৳${Number(p.price).toFixed(2)}</div><div class="stock ${out?"out":"in"}">${out?"Out of stock":"In stock"}</div></div></article>`}).join("");
 $("#emptyState").classList.toggle("hidden",list.length>0);$$("#productsGrid .product").forEach(el=>el.onclick=()=>showProduct(el.dataset.id))}
 function renderGames(){$("#gamesGrid").innerHTML=games.map(g=>`<article class="game-card" data-id="${g.id}"><img src="${esc(g.image||"https://placehold.co/600x340/0a1020/00e5ff?text=GAME")}"><div class="game-body"><h3>${esc(g.name)}</h3><p>${esc(g.desc||"")}</p></div></article>`).join("");
-$("#gamesEmpty").classList.toggle("hidden",games.length>0);$$("#gamesGrid .game-card").forEach(el=>el.onclick=()=>showGame(el.dataset.id))}
-function showGame(id){const g=games.find(x=>x.id===id);if(!g)return;currentGame=g;$("#gameName").textContent=g.name;$("#gameDesc").textContent=g.desc||"";$("#gameImage").innerHTML=`<img src="${esc(g.image||"https://placehold.co/600x340/0a1020/00e5ff?text=GAME")}">`;$("#gamePlay").href=g.url||"#";openModal("#gameModal")}
+$("#gamesEmpty").classList.toggle("hidden",games.length>0);$$("#gamesGrid .game-card").forEach(el=>el.onclick=()=>openGame(el.dataset.id))}
 function filterProducts(t,p){currentTopic=t;renderCategoryBar();renderProducts();scrollToId("shop")}
 function showProduct(id){const p=products.find(x=>x.id===id);if(!p)return;currentProduct=p;$("#productName").textContent=p.name;$("#productPrice").textContent="৳"+Number(p.price).toFixed(2);$("#productOldPrice").textContent=p.oldPrice?"৳"+Number(p.oldPrice).toFixed(2):"";$("#productDetails").textContent=p.details||"";const out=p.stock==="out";$("#productStock").textContent=out?"Out of stock":"In stock";$("#productStock").className="stock "+(out?"out":"in");$("#orderBtn").disabled=out;$("#orderBtn").textContent=out?"Out of stock":"Order now (COD)";$("#productImages").innerHTML=p.images.map(i=>`<img src="${esc(i)}">`).join("")||`<img src="https://placehold.co/800x600/0a1020/00e5ff?text=FEXO+HUB">`;openModal("#productModal")}
 function renderMusic(){$("#musicList").innerHTML=site.music.map(m=>`<div class="music-item"><div><strong>${esc(m.name)}</strong></div><button class="btn btn-ghost" data-play="${esc(m.url)}">Play</button></div>`).join("")||`<p class="empty">No music.</p>`;$$("#musicList [data-play]").forEach(b=>b.onclick=()=>{const a=$("#siteMusic");if(a.getAttribute("src")!==b.dataset.play){a.src=b.dataset.play;a.play()}else a.paused?a.play():a.pause()})}
 function renderUser(){const u=auth.currentUser;$("#userArea").classList.toggle("hidden",!u);$("#googleArea").classList.toggle("hidden",!!u);if(u)$("#userEmail").textContent=u.email;$("#accountBtn").textContent=u?"Account":"Sign in"}
-auth.onAuthStateChanged(()=>{renderUser();listenOrders();listenMyOrders()});
+auth.onAuthStateChanged(()=>{renderUser();listenOrders();listenMyOrders();onAuthLb()});
 $("#accountBtn").onclick=()=>openModal("#accountModal");
 $("#googleSignIn").onclick=async()=>{try{await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());closeModal($("#accountModal"));toast("Signed in")}catch(e){toast(e.message)}};
 $("#signOutBtn").onclick=async()=>{await auth.signOut();toast("Signed out")};
@@ -61,7 +59,7 @@ $("#adminLoginForm").onsubmit=async e=>{e.preventDefault();const f=new FormData(
 $("#adminClose").onclick=async()=>{$("#adminPanel").classList.add("hidden");await auth.signOut()};
 function openAdmin(){$("#adminPanel").classList.remove("hidden");renderAdmin();listenOrders()}
 $$(".admin-tab").forEach(b=>b.onclick=()=>{$$(".admin-tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");$$(".admin-view").forEach(v=>v.classList.add("hidden"));$("#tab-"+b.dataset.tab).classList.remove("hidden")});
-function renderAdmin(){const c=$("#contentForm").elements;c.siteName.value=site.content.siteName||"";c.heroTitle.value=site.content.title||"";c.heroText.value=site.content.text||"";c.sponsorTitle.value=site.content.sponsorTitle||"";c.sponsorText.value=site.content.sponsorText||"";c.sponsorLink.value=site.content.sponsorLink||"";renderTopicsAdmin();refreshTopicSelect();renderProductsAdmin();renderGamesAdmin();renderMusicAdmin();renderOrders()}
+function renderAdmin(){const c=$("#contentForm").elements;c.siteName.value=site.content.siteName||"";c.heroTitle.value=site.content.title||"";c.heroText.value=site.content.text||"";c.sponsorTitle.value=site.content.sponsorTitle||"";c.sponsorText.value=site.content.sponsorText||"";c.sponsorLink.value=site.content.sponsorLink||"";renderTopicsAdmin();refreshTopicSelect();renderProductsAdmin();renderMusicAdmin();renderOrders()}
 function renderTopicsAdmin(){$("#topicsAdmin").innerHTML=site.topics.map(t=>`<div class="admin-item"><div><strong>${esc(t.name)}</strong></div><div><button onclick="addPage('${t.id}')">Add page</button><button onclick="delTopic('${t.id}')">Delete</button></div></div>`).join("")}
 async function addPage(id){const n=prompt("Page name");if(!n)return;await siteRef.set({topics:site.topics.map(t=>t.id===id?{...t,pages:[...(t.pages||[]),{id:crypto.randomUUID(),name:n}]}:t)},{merge:true});toast("Added")}
 async function delTopic(id){if(!confirm("Delete?"))return;await siteRef.set({topics:site.topics.filter(t=>t.id!==id)},{merge:true});toast("Deleted")}
@@ -83,18 +81,6 @@ async function toggleStock(id){const p=products.find(x=>x.id===id);await db.coll
 function editProduct(id){const p=products.find(x=>x.id===id);editingProduct=id;const f=$("#productForm").elements;f.pname.value=p.name;f.price.value=p.price;f.oldPrice.value=p.oldPrice||"";f.stock.value=p.stock||"in";f.details.value=p.details||"";f.topic.value=p.topicId;updatePageOptions();f.page.value=p.pageId;$("#imagePreview").innerHTML=p.images.map(i=>`<img src="${esc(i)}" width="50">`).join("");$("#cancelProduct").classList.remove("hidden")}
 async function delProduct(id){if(!confirm("Delete?"))return;await db.collection("products").doc(id).delete();toast("Deleted")}
 $("#productSearchAdmin").oninput=renderProductsAdmin;
-/* Games admin */
-$("#gameImageInput").onchange=e=>{selectedGameImage=e.target.files[0];$("#gameImagePreview").innerHTML=selectedGameImage?`<img src="${URL.createObjectURL(selectedGameImage)}" width="80">`:""};
-const resetGameForm=()=>{editingGame=null;selectedGameImage=null;$("#gameImagePreview").innerHTML="";$("#cancelGame").classList.add("hidden");$("#gameForm").reset()};
-$("#gameForm").onsubmit=async e=>{e.preventDefault();if(!isAdmin())return toast("Admin only");const f=new FormData(e.target),id=editingGame||crypto.randomUUID();const btn=e.target.querySelector("button.btn-neon");btn.disabled=true;
-try{let image=null;if(selectedGameImage){const ref=storage.ref(`games/${id}/${Date.now()}-${selectedGameImage.name}`);await ref.put(selectedGameImage);image=await ref.getDownloadURL()}
-const old=editingGame?games.find(g=>g.id===editingGame):null;
-const game={name:f.get("gname"),desc:f.get("gdesc"),url:f.get("gurl"),image:image||(old?.image||null),createdAt:old?.createdAt||Date.now()};
-await db.collection("games").doc(id).set(game);resetGameForm();toast("Saved")}catch(err){toast(err.message)}finally{btn.disabled=false}};
-$("#cancelGame").onclick=resetGameForm;
-function renderGamesAdmin(){$("#gamesAdmin").innerHTML=games.map(g=>`<div class="admin-item"><div><strong>${esc(g.name)}</strong><br><small>${esc(g.url)}</small></div><div><button onclick="editGame('${g.id}')">Edit</button><button onclick="delGame('${g.id}')">Delete</button></div></div>`).join("")}
-function editGame(id){const g=games.find(x=>x.id===id);editingGame=id;const f=$("#gameForm").elements;f.gname.value=g.name;f.gdesc.value=g.desc||"";f.gurl.value=g.url||"";$("#gameImagePreview").innerHTML=g.image?`<img src="${esc(g.image)}" width="80">`:"";$("#cancelGame").classList.remove("hidden")}
-async function delGame(id){if(!confirm("Delete?"))return;await db.collection("games").doc(id).delete();toast("Deleted")}
 $("#musicForm").onsubmit=async e=>{e.preventDefault();if(!isAdmin())return toast("Admin only");const f=new FormData(e.target),file=f.get("song"),name=f.get("sname");
 try{const id=crypto.randomUUID(),ref=storage.ref(`music/${id}-${file.name}`);await ref.put(file);const url=await ref.getDownloadURL();await siteRef.set({music:[...site.music,{id,name,url}]},{merge:true});e.target.reset();toast("Uploaded")}catch(err){toast(err.message)}};
 function renderMusicAdmin(){$("#musicAdmin").innerHTML=site.music.map(m=>`<div class="admin-item"><div><strong>${esc(m.name)}</strong></div><div><button onclick="delMusic('${m.id}')">Delete</button></div></div>`).join("")}
@@ -103,4 +89,44 @@ function renderOrders(){const list=[...orders].sort((a,b)=>b.createdAt-a.created
 $("#exportData").onclick=()=>{const b=new Blob([JSON.stringify({site,products,orders,games},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup.json";a.click()};
 $("#searchInput").oninput=e=>{const q=e.target.value.toLowerCase();if(!q)return renderProducts();renderProducts(products.filter(p=>p.name.toLowerCase().includes(q)));scrollToId("shop")};
 $("#searchBtn").onclick=()=>$("#searchInput").dispatchEvent(new Event("input"));
+/* ===== Game interface + per-game leaderboard ===== */
+const CYCLE_MS=LB_CYCLE_DAYS*864e5,BD_OFFSET=6*36e5; // reset Bangladesh time onujayi
+const cycleId=()=>Math.floor((Date.now()+BD_OFFSET)/CYCLE_MS);
+const cycleEnd=()=>(cycleId()+1)*CYCLE_MS-BD_OFFSET;
+const lbRef=(gid,cyc)=>db.collection("leaderboards").doc(gid+"_"+cyc).collection("scores");
+const fmt=n=>Number(n||0).toLocaleString();
+const playerName=u=>u.displayName||(u.email||"Player").split("@")[0];
+let lb={tok:0,game:null,cycle:0,last:null,done:false,loading:false,rank:0},lbIO=null,lbTimer=null,playing=null;
+function openGame(id){const g=games.find(x=>x.id===id);if(!g)return;currentGame=g;
+$("#gvTitle").textContent=g.name;$("#gvDesc").textContent=g.desc||"";$("#gvImage").src=g.image||"https://placehold.co/600x340/0a1020/00e5ff?text="+encodeURIComponent(g.name);
+showSection("gameview");window.scrollTo(0,0);resetLeaderboard();
+if(!lbIO){lbIO=new IntersectionObserver(en=>{if(en[0].isIntersecting&&currentSection==="gameview")loadMore()},{rootMargin:"250px"});lbIO.observe($("#lbSentinel"))}
+clearInterval(lbTimer);lbTimer=setInterval(tickReset,30000);tickReset()}
+function resetLeaderboard(){lb={tok:lb.tok+1,game:currentGame,cycle:cycleId(),last:null,done:false,loading:false,rank:0};
+$("#lbList").innerHTML="";$("#lbEmpty").classList.add("hidden");loadMine();loadMore()}
+function tickReset(){if(currentSection!=="gameview"||!currentGame){clearInterval(lbTimer);return}
+if(cycleId()!==lb.cycle)return resetLeaderboard();
+const ms=cycleEnd()-Date.now(),d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);
+$("#gvReset").textContent="Resets in "+(d?d+"d ":"")+h+"h "+m+"m"}
+async function loadMore(){if(lb.loading||lb.done||!lb.game)return;lb.loading=true;const tok=lb.tok,gid=lb.game.id,cyc=lb.cycle;$("#lbLoader").classList.remove("hidden");
+try{let q=lbRef(gid,cyc).orderBy("score","desc").limit(LB_PAGE_SIZE);if(lb.last)q=q.startAfter(lb.last);const s=await q.get();if(tok!==lb.tok)return;
+const me=auth.currentUser?.uid;
+$("#lbList").insertAdjacentHTML("beforeend",s.docs.map(d=>{const x=d.data(),r=++lb.rank;return `<div class="lb-row r${r} ${x.uid===me?"me":""}" data-uid="${esc(x.uid)}"><div class="lb-rank">${r<=3?["🥇","🥈","🥉"][r-1]:r}</div><div class="lb-name">${esc(x.name||"Player")}<small class="you">${x.uid===me?"(you)":""}</small></div><div class="lb-score">${fmt(x.score)}</div></div>`}).join(""));
+if(s.docs.length)lb.last=s.docs[s.docs.length-1];if(s.docs.length<LB_PAGE_SIZE)lb.done=true;
+$("#lbEmpty").classList.toggle("hidden",lb.rank>0)}
+catch(e){if(tok===lb.tok){lb.done=true;toast(e.message)}}
+finally{if(tok===lb.tok){lb.loading=false;$("#lbLoader").classList.add("hidden");if(!lb.done&&lbIO){const el=$("#lbSentinel");lbIO.unobserve(el);lbIO.observe(el)}}}}
+async function loadMine(){const box=$("#gvMine"),u=auth.currentUser;if(!u){box.textContent="Sign in to save your score on the leaderboard.";return}
+try{const d=await lbRef(lb.game.id,lb.cycle).doc(u.uid).get();box.innerHTML=d.exists?`Your best: <strong>${fmt(d.data().score)}</strong>`:"You have no score yet. Press Play now!"}catch(e){box.textContent=""}}
+function onAuthLb(){if(currentSection!=="gameview"||!lb.game)return;loadMine();const me=auth.currentUser?.uid;$$("#lbList .lb-row").forEach(r=>{const m=r.dataset.uid===me;r.classList.toggle("me",m);r.querySelector(".you").textContent=m?"(you)":""})}
+/* Play now -> proper game (iframe) */
+$("#gvPlay").onclick=()=>{if(!currentGame)return;if(!auth.currentUser){openModal("#accountModal");return toast("Sign in to play and save your score")}
+playing=currentGame;$("#gpTitle").textContent=currentGame.name;$("#gpFrame").src=currentGame.url;$("#gamePlayer").classList.remove("hidden");$("#siteMusic").pause()};
+$("#gpClose").onclick=()=>{$("#gpFrame").src="about:blank";$("#gamePlayer").classList.add("hidden");playing=null;if(currentSection==="gameview")resetLeaderboard()};
+/* Game over -> highest score only. Game theke: parent.postMessage({type:"fexo-score",score:123},"*") */
+window.addEventListener("message",e=>{const d=e.data;if(!d||d.type!=="fexo-score"||!playing)return;if(e.origin!==location.origin||e.source!==$("#gpFrame").contentWindow)return;submitScore(playing,d.score)});
+async function submitScore(g,score){const u=auth.currentUser;score=Math.floor(Number(score));if(!u||!isFinite(score)||score<=0)return;
+const ref=lbRef(g.id,cycleId()).doc(u.uid);
+try{const r=await db.runTransaction(async t=>{const d=await t.get(ref);const best=d.exists?d.data().score:0;if(score<=best)return{saved:false,best};t.set(ref,{uid:u.uid,name:playerName(u),score,updatedAt:Date.now()});return{saved:true,best:score}});
+toast(r.saved?"New high score: "+fmt(r.best)+"!":"Your best stays "+fmt(r.best))}catch(err){toast(err.message)}}
 renderAll();initSite();trackVisitor();
