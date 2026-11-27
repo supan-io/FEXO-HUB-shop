@@ -1,8 +1,8 @@
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const db=firebase.firestore(),storage=firebase.storage(),auth=firebase.auth();
 const siteRef=db.collection("site").doc("main");
-let site={content:{...DEFAULT_CONTENT},topics:[],music:[]},products=[],orders=[],myOrders=[],editingProduct=null,selectedFiles=[],currentProduct=null,pendingOrder=null,orderLocation=null,currentSection="home",currentTopic="all";
-const sections=["home","sponsor"];
+let site={content:{...DEFAULT_CONTENT},topics:[],music:[]},products=[],orders=[],myOrders=[],editingProduct=null,selectedFiles=[],currentProduct=null,pendingOrder=null,currentSection="home",currentTopic="all";
+const sections=["home","games","sponsor"];
 const toast=m=>{const t=$("#toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500)};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const openModal=s=>$(s).classList.add("open"),closeModal=el=>el.classList.remove("open");
@@ -21,8 +21,7 @@ function renderAll(){$("#year").textContent=new Date().getFullYear();$("#footerB
 $("#heroEyebrow").textContent=site.content.eyebrow;$("#heroTitle").textContent=site.content.title;$("#heroText").textContent=site.content.text;
 $("#bizTitle").textContent=site.content.sponsorTitle;$("#bizText").textContent=site.content.sponsorText;$("#bizEmail").textContent=ADMIN_EMAIL;$("#bizPhone").textContent=SUPPORT_PHONE;$("#bizLink").href=site.content.sponsorLink||"#";$("#bizCta").href=site.content.sponsorLink||"#";
 renderNav();renderTopicsNav();renderCategoryBar();renderProducts();renderMyOrders();renderMusic();renderLeaderboard();renderUser()}
-function renderNav(){const n=$("#mainNav");n.innerHTML="";[["home","Home"],["sponsor","Sponsorship"]].forEach(([id,l])=>{const a=document.createElement("a");a.textContent=l;a.onclick=()=>showSection(id);if(currentSection===id)a.style.color="#fff";n.appendChild(a)});
-const g=document.createElement("a");g.textContent="Game Zone";g.href="games/rickshaw-city/";n.appendChild(g)}
+function renderNav(){const n=$("#mainNav");n.innerHTML="";[["home","Home"],["games","Game Hub"],["sponsor","Sponsorship"]].forEach(([id,l])=>{const a=document.createElement("a");a.textContent=l;a.onclick=()=>showSection(id);if(currentSection===id)a.style.color="#fff";n.appendChild(a)})}
 function renderTopicsNav(){site.topics.forEach(t=>(t.pages||[]).forEach(p=>{const a=document.createElement("a");a.textContent=t.name+" / "+p.name;a.onclick=()=>filterProducts(t.id,p.id);$("#mainNav").appendChild(a)}))}
 function renderCategoryBar(){const bar=$("#categoryBar");bar.innerHTML="";
 const all=document.createElement("button");all.textContent="All";all.className=currentTopic==="all"?"active":"";all.onclick=()=>{currentTopic="all";renderCategoryBar();renderProducts()};bar.appendChild(all);
@@ -45,10 +44,9 @@ if(!f.get("division")||!f.get("district").trim()||!f.get("upazila").trim())retur
 pendingOrder={productId:currentProduct.id,productName:currentProduct.name,price:currentProduct.price,quantity:+f.get("quantity"),customer:email,adminEmail:ADMIN_EMAIL,name:f.get("name"),phone,district:f.get("district"),upazila:f.get("upazila"),area:f.get("area")||"",address:f.get("address"),payment:"COD",division:f.get("division")};
 $("#orderSummary").innerHTML=`<strong>${esc(currentProduct.name)}</strong><br>৳${Number(currentProduct.price).toFixed(2)} x ${pendingOrder.quantity}<br>${esc(pendingOrder.name)}<br>${esc(phone)}<br>${esc(pendingOrder.division)}, ${esc(pendingOrder.district)}, ${esc(pendingOrder.upazila)}<br>${esc(pendingOrder.address)}<br>Payment: COD`;
 closeModal($("#orderModal"));openModal("#confirmModal")};
-$("#locationBtn").onclick=()=>navigator.geolocation.getCurrentPosition(p=>{orderLocation={lat:p.coords.latitude,lng:p.coords.longitude};$("#locationStatus").textContent="Location captured"},()=>toast("Location denied"));
-$("#confirmOrderBtn").onclick=async()=>{if(!orderLocation)return toast("Share location first");
-const data={...pendingOrder,location:orderLocation,status:"pending",createdAt:Date.now(),canCancelUntil:Date.now()+15*60*1000};
-try{await db.collection("orders").add(data);await db.collection("products").doc(pendingOrder.productId).update({orderCount:(currentProduct.orderCount||0)+1});pendingOrder=null;orderLocation=null;$("#orderForm").reset();$("#locationStatus").textContent="Location not shared.";closeModal($("#confirmModal"));toast("Order placed")}catch(e){toast(e.message)}};
+$("#confirmOrderBtn").onclick=async()=>{
+const data={...pendingOrder,status:"pending",createdAt:Date.now(),canCancelUntil:Date.now()+15*60*1000};
+try{await db.collection("orders").add(data);await db.collection("products").doc(pendingOrder.productId).update({orderCount:(currentProduct.orderCount||0)+1});pendingOrder=null;$("#orderForm").reset();closeModal($("#confirmModal"));toast("Order placed")}catch(e){toast(e.message)}};
 function cancelOrder(id){db.collection("orders").doc(id).update({status:"cancelled"}).then(()=>toast("Cancelled"))}
 function setStatus(id,s){db.collection("orders").doc(id).update({status:s}).then(()=>toast("Updated"))}
 function renderMyOrders(){const el=$("#myOrdersList");el.innerHTML=myOrders.map(o=>{const can=o.status==="pending"&&Date.now()<(o.canCancelUntil||0);return `<div class="admin-item"><div><strong>${esc(o.productName)}</strong> x ${o.quantity}<br><span class="status ${o.status}">${o.status}</span></div><div>${can?`<button class="btn btn-ghost" onclick="cancelOrder('${o.id}')">Cancel</button>`:""}</div></div>`}).join("")||`<p class="empty">No orders.</p>`}
@@ -85,7 +83,7 @@ $("#musicForm").onsubmit=async e=>{e.preventDefault();if(!isAdmin())return toast
 try{const id=crypto.randomUUID(),ref=storage.ref(`music/${id}-${file.name}`);await ref.put(file);const url=await ref.getDownloadURL();await siteRef.set({music:[...site.music,{id,name,url}]},{merge:true});e.target.reset();toast("Uploaded")}catch(err){toast(err.message)}};
 function renderMusicAdmin(){$("#musicAdmin").innerHTML=site.music.map(m=>`<div class="admin-item"><div><strong>${esc(m.name)}</strong></div><div><button onclick="delMusic('${m.id}')">Delete</button></div></div>`).join("")}
 async function delMusic(id){const m=site.music.find(x=>x.id===id);try{await storage.refFromURL(m.url).delete()}catch(e){}await siteRef.set({music:site.music.filter(x=>x.id!==id)},{merge:true});toast("Deleted")}
-function renderOrders(){const list=[...orders].sort((a,b)=>b.createdAt-a.createdAt);$("#ordersAdmin").innerHTML=list.map(o=>`<div class="admin-item"><div><strong>${esc(o.productName)}</strong> x ${o.quantity}<br><span class="status ${o.status}">${o.status}</span><br><small>${esc(o.name)} • ${esc(o.phone)} • ${esc(o.customer)}</small><br><small>${esc(o.division)}, ${esc(o.district)}, ${esc(o.upazila)}</small><br><small>${esc(o.address)}</small>${o.location?`<br><small>Loc: ${o.location.lat.toFixed(3)}, ${o.location.lng.toFixed(3)}</small>`:""}</div><div><button onclick="setStatus('${o.id}','accepted')">Accept</button><button onclick="setStatus('${o.id}','shipped')">Ship</button><button onclick="setStatus('${o.id}','delivered')">Deliver</button><button onclick="setStatus('${o.id}','cancelled')">Cancel</button></div></div>`).join("")||`<p class="empty">No orders.</p>`}
+function renderOrders(){const list=[...orders].sort((a,b)=>b.createdAt-a.createdAt);$("#ordersAdmin").innerHTML=list.map(o=>`<div class="admin-item"><div><strong>${esc(o.productName)}</strong> x ${o.quantity}<br><span class="status ${o.status}">${o.status}</span><br><small>${esc(o.name)} • ${esc(o.phone)} • ${esc(o.customer)}</small><br><small>${esc(o.division)}, ${esc(o.district)}, ${esc(o.upazila)}</small><br><small>${esc(o.address)}</small></div><div><button onclick="setStatus('${o.id}','accepted')">Accept</button><button onclick="setStatus('${o.id}','shipped')">Ship</button><button onclick="setStatus('${o.id}','delivered')">Deliver</button><button onclick="setStatus('${o.id}','cancelled')">Cancel</button></div></div>`).join("")||`<p class="empty">No orders.</p>`}
 $("#exportData").onclick=()=>{const b=new Blob([JSON.stringify({site,products,orders},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup.json";a.click()};
 $("#searchInput").oninput=e=>{const q=e.target.value.toLowerCase();if(!q)return renderProducts();renderProducts(products.filter(p=>p.name.toLowerCase().includes(q)));scrollToId("shop")};
 $("#searchBtn").onclick=()=>$("#searchInput").dispatchEvent(new Event("input"));

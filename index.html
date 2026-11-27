@@ -11,7 +11,7 @@
 <section id="home">
 <div class="hero"><div class="hero-inner"><p class="eyebrow" id="heroEyebrow"></p><h1 id="heroTitle"></h1><p id="heroText"></p>
 <div class="hero-actions"><button class="btn btn-neon" onclick="scrollToId('shop')">Shop now</button>
-<a class="btn btn-ghost" href="games/rickshaw-city/">Play Rickshaw City</a></div>
+<a class="btn btn-ghost" href="#" onclick="showSection('games')">Game Hub</a></div>
 <div class="stats">Today visitors: <strong id="visitorCount">0</strong></div></div></div>
 
 <div id="shop" class="block"><div class="section-head"><h2>Shop</h2><p id="productsSubtitle"></p></div>
@@ -23,6 +23,15 @@
 <div id="music" class="block"><div class="section-head"><h2>Music</h2></div><div id="musicList" class="music-list"></div></div>
 
 <div id="leaderboard" class="block"><div class="section-head"><h2>Shop Leaderboard</h2><p>Top products by orders. Refresh every 3 days.</p></div><div id="leaderboardList" class="admin-list"></div><button id="resetLeaderboard" class="btn btn-ghost hidden">Reset leaderboard</button></div>
+</section>
+
+<!-- GAME HUB -->
+<section id="games" class="hidden">
+<div class="section-head"><h2>Game Hub</h2><p>Choose a game to play</p></div>
+<div class="game-cards">
+<a class="game-card" href="games/rickshaw-city/"><h3>Rickshaw City</h3><p>3D open-world Bangladeshi rickshaw game</p></a>
+<a class="game-card" href="games/tesla-road/"><h3>Tesla Road</h3><p>Endless 3-lane driving game</p></a>
+</div>
 </section>
 
 <!-- SPONSORSHIP BUSINESS PAGE -->
@@ -58,7 +67,6 @@
 <label>Payment<select name="payment"><option>Cash on Delivery (COD)</option></select></label><button class="btn btn-neon full">Review order</button></form></div></div>
 
 <div id="confirmModal" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Confirm order</h3><div id="orderSummary" class="summary"></div>
-<button id="locationBtn" class="btn btn-ghost full">Share live location</button><p id="locationStatus" class="tiny">Location not shared.</p>
 <button id="confirmOrderBtn" class="btn btn-neon full">Confirm order</button></div></div>
 
 <div id="adminLogin" class="modal"><div class="modal-box"><button class="close" data-close>&times;</button><h3>Admin</h3>
